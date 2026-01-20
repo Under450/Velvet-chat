@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Jessica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 100%);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 23, 68, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            font-size: 20px;
+            color: #f5f5f5;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 15px rgba(255, 23, 68, 0.4);
+        }
+
+        .header-name {
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-btn {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Credits bar */
+        .credits-bar {
+            background: rgba(26, 10, 15, 0.8);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 23, 68, 0.1);
+        }
+
+        .credits-display {
+            display: flex;
+            gap: 15px;
+            font-size: 15px;
+        }
+
+        .credit-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .add-credits-btn {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 23, 68, 0.3);
+        }
+
+        .add-credits-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Chat messages area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Message bubbles */
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(255, 23, 68, 0.3);
+        }
+
+        .message.user .message-avatar {
+            background: #2a2a2a;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 15px;
+        }
+
+        .message.jessica .message-bubble {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background: #2a2a2a;
+            color: #f5f5f5;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #888;
+            padding: 0 5px;
+        }
+
+        /* Locked content */
+        .locked-content {
+            width: 200px;
+            height: 150px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 23, 68, 0.1) 0%, rgba(255, 92, 141, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 23, 68, 0.3);
+            margin-top: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .locked-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(255, 23, 68, 0.05),
+                    rgba(255, 23, 68, 0.05) 10px,
+                    rgba(255, 92, 141, 0.05) 10px,
+                    rgba(255, 92, 141, 0.05) 20px
+                );
+        }
+
+        .locked-icon {
+            font-size: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .unlock-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff5c8d;
+            position: relative;
+            z-index: 1;
+        }
+
+        .unlock-cost {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .locked-content:hover {
+            border-color: rgba(255, 23, 68, 0.6);
+            transform: scale(1.02);
+            transition: all 0.2s;
+        }
+
+        /* Voice message */
+        .voice-message {
+            background: rgba(26, 10, 15, 0.6);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+            width: 220px;
+        }
+
+        .play-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(255, 23, 68, 0.3);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .waveform {
+            flex: 1;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .waveform-bar {
+            width: 3px;
+            background: #ff5c8d;
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+
+        .voice-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Input area */
+        .input-area {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 100%);
+            padding: 15px 20px;
+            border-top: 1px solid rgba(255, 23, 68, 0.2);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-btn {
+            font-size: 22px;
+            cursor: pointer;
+            padding: 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .input-btn:hover {
+            opacity: 1;
+        }
+
+        .message-input {
+            flex: 1;
+            background: rgba(42, 42, 42, 0.8);
+            border: 1px solid rgba(255, 23, 68, 0.2);
+            border-radius: 20px;
+            padding: 12px 18px;
+            color: #f5f5f5;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .message-input:focus {
+            border-color: rgba(255, 23, 68, 0.5);
+            background: rgba(42, 42, 42, 1);
+        }
+
+        .message-input::placeholder {
+            color: #666;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 2px 10px rgba(255, 23, 68, 0.3);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(42, 42, 42, 0.3);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            border-radius: 3px;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-8px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="back-btn">◄</div>
+            <div class="profile-pic">💋</div>
+            <div class="header-name">Jessica</div>
+        </div>
+        <div class="profile-btn">💝</div>
+    </div>
+
+    <!-- Credits bar -->
+    <div class="credits-bar">
+        <div class="credits-display">
+            <div class="credit-item">🌹 <strong>12</strong></div>
+            <div class="credit-item">🍫 <strong>5</strong></div>
+            <div class="credit-item">🍾 <strong>2</strong></div>
+        </div>
+        <button class="add-credits-btn">+ Add</button>
+    </div>
+
+    <!-- Chat messages -->
+    <div class="chat-container" id="chatContainer">
+        <!-- Jessica's message -->
+        <div class="message jessica">
+            <div class="message-avatar">💋</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    Hey handsome 💕 I've been thinking about you...
+                </div>
+                <div class="message-time">2:34 PM</div>
+            </div>
+        </div>
+
+        <!-- User's message -->
+        <div class="message user">
+            <div class="message-avatar">👤</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    Hey beautiful! How's your day going?
+                </div>
+                <div class="message-time">2:35 PM</div>
+            </div>
+        </div>
+
+        <!-- Jessica's message -->
+        <div class="message jessica">
+            <div class="message-avatar">💋</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    So much better now that you're here 😘
+                </div>
+                <div class="message-time">2:35 PM</div>
+            </div>
+        </div>
+
+        <!-- User's message -->
+        <div class="message user">
+            <div class="message-avatar">👤</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    What are you up to?
+                </div>
+                <div class="message-time">2:36 PM</div>
+            </div>
+        </div>
+
+        <!-- Jessica's message with locked photo -->
+        <div class="message jessica">
+            <div class="message-avatar">💋</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    Just got out of the shower... want to see what I'm wearing? 😈
+                </div>
+                <div class="locked-content">
+                    <div class="locked-icon">🔒</div>
+                    <div class="unlock-text">Unlock Photo</div>
+                    <div class="unlock-cost">3🍫 Chocolates</div>
+                </div>
+                <div class="message-time">2:37 PM</div>
+            </div>
+        </div>
+
+        <!-- User's message -->
+        <div class="message user">
+            <div class="message-avatar">👤</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    You're teasing me 😅
+                </div>
+                <div class="message-time">2:38 PM</div>
+            </div>
+        </div>
+
+        <!-- Jessica's message with voice -->
+        <div class="message jessica">
+            <div class="message-avatar">💋</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    Maybe just a little... 😘 Listen to this
+                </div>
+                <div class="voice-message">
+                    <div class="play-btn">▶️</div>
+                    <div class="waveform">
+                        <div class="waveform-bar" style="height: 12px;"></div>
+                        <div class="waveform-bar" style="height: 20px;"></div>
+                        <div class="waveform-bar" style="height: 8px;"></div>
+                        <div class="waveform-bar" style="height: 18px;"></div>
+                        <div class="waveform-bar" style="height: 15px;"></div>
+                        <div class="waveform-bar" style="height: 22px;"></div>
+                        <div class="waveform-bar" style="height: 10px;"></div>
+                        <div class="waveform-bar" style="height: 16px;"></div>
+                        <div class="waveform-bar" style="height: 14px;"></div>
+                        <div class="waveform-bar" style="height: 19px;"></div>
+                    </div>
+                    <div class="voice-time">0:08</div>
+                </div>
+                <div class="message-time">2:39 PM</div>
+            </div>
+        </div>
+
+        <!-- Jessica typing indicator -->
+        <div class="message jessica">
+            <div class="message-avatar">💋</div>
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+        <div class="input-buttons">
+            <div class="input-btn">📷</div>
+            <div class="input-btn">🎁</div>
+        </div>
+        <input type="text" class="message-input" placeholder="Type your message...">
+        <div class="input-btn">🎤</div>
+        <button class="send-btn">Send</button>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Click on locked content
+        document.querySelector('.locked-content').addEventListener('click', function() {
+            alert('This would show the "Buy Credits" modal!\n\nYou need 3🍫 Chocolates to unlock this photo.');
+        });
+
+        // Click on voice message
+        document.querySelector('.play-btn').addEventListener('click', function() {
+            alert('This would play Jessica\'s voice message!');
+        });
+
+        // Click add credits button
+        document.querySelector('.add-credits-btn').addEventListener('click', function() {
+            alert('This would open the "Buy Credits" screen!');
+        });
+
+        // Send message demo
+        document.querySelector('.send-btn').addEventListener('click', function() {
+            const input = document.querySelector('.message-input');
+            if (input.value.trim()) {
+                alert('Message would be sent: ' + input.value);
+                input.value = '';
+            }
+        });
+
+        // Enter to send
+        document.querySelector('.message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('.send-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>
