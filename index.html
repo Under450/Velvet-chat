@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jessica's Private Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f5f5f5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .profile-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 0 40px rgba(255, 23, 68, 0.4),
+                0 0 80px rgba(255, 23, 68, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-photo::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #ff1744, #ff5c8d, #ff1744);
+            border-radius: 50%;
+            z-index: -1;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .profile-photo-placeholder {
+            width: 176px;
+            height: 176px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #ff1744;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #f5f5f5;
+            margin-bottom: 40px;
+            font-style: italic;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #ff1744 0%, #ff5c8d 100%);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 10px 30px rgba(255, 23, 68, 0.3),
+                0 0 20px rgba(255, 23, 68, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 15px 40px rgba(255, 23, 68, 0.4),
+                0 0 30px rgba(255, 23, 68, 0.3);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        .bonus-text {
+            font-size: 15px;
+            color: #ff5c8d;
+            opacity: 0.9;
+        }
+
+        .hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: float 8s infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Color tweaking section */
+        .color-tweaker {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ff1744;
+            max-width: 300px;
+        }
+
+        .color-tweaker h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #ff5c8d;
+        }
+
+        .color-option {
+            margin-bottom: 15px;
+        }
+
+        .color-option label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .color-option input {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .preset-colors {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .preset-btn:hover {
+            border-color: white;
+        }
+
+        .toggle-tweaker {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff1744;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(255, 23, 68, 0.3);
+        }
+
+        .color-tweaker.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating hearts background -->
+    <div class="hearts" id="hearts"></div>
+
+    <!-- Main content -->
+    <div class="container">
+        <div class="profile-photo">
+            <div class="profile-photo-placeholder">💋</div>
+        </div>
+
+        <h1>Jessica's Private Chat</h1>
+        
+        <p class="tagline">
+            "Hey baby... I've been waiting for you 💋"
+        </p>
+
+        <button class="cta-button">
+            Enter My Room 💕
+        </button>
+
+        <p class="bonus-text">
+            New here? I'll give you 5 free roses to start 🌹
+        </p>
+    </div>
+
+    <!-- Toggle button -->
+    <button class="toggle-tweaker" onclick="toggleTweaker()">
+        🎨 Tweak Colors
+    </button>
+
+    <!-- Color tweaker panel -->
+    <div class="color-tweaker hidden" id="colorTweaker">
+        <h3>🎨 Tweak Colors</h3>
+        
+        <div class="color-option">
+            <label>Primary Color (Pink)</label>
+            <input type="color" id="primaryColor" value="#ff1744" onchange="updateColors()">
+        </div>
+
+        <div class="color-option">
+            <label>Secondary Color (Light Pink)</label>
+            <input type="color" id="secondaryColor" value="#ff5c8d" onchange="updateColors()">
+        </div>
+
+        <div class="color-option">
+            <label>Background Dark</label>
+            <input type="color" id="bgDark" value="#0a0a0a" onchange="updateColors()">
+        </div>
+
+        <div class="preset-colors">
+            <button class="preset-btn" style="background: linear-gradient(135deg, #ff1744, #ff5c8d);" onclick="setPreset('#ff1744', '#ff5c8d', '#0a0a0a')">Rose Pink</button>
+            <button class="preset-btn" style="background: linear-gradient(135deg, #d32f2f, #f44336);" onclick="setPreset('#d32f2f', '#f44336', '#0a0a0a')">Deep Red</button>
+            <button class="preset-btn" style="background: linear-gradient(135deg, #7b1fa2, #ba68c8);" onclick="setPreset('#7b1fa2', '#ba68c8', '#0a0a0a')">Purple</button>
+            <button class="preset-btn" style="background: linear-gradient(135deg, #c2185b, #ec407a);" onclick="setPreset('#c2185b', '#ec407a', '#0a0a0a')">Hot Pink</button>
+        </div>
+    </div>
+
+    <script>
+        // Create floating hearts
+        function createHeart() {
+            const hearts = ['💕', '💋', '🌹', '💝', '❤️'];
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDelay = Math.random() * 8 + 's';
+            heart.style.fontSize = (Math.random() * 10 + 15) + 'px';
+            document.getElementById('hearts').appendChild(heart);
+        }
+
+        // Create multiple hearts
+        for (let i = 0; i < 15; i++) {
+            createHeart();
+        }
+
+        // Toggle color tweaker
+        function toggleTweaker() {
+            const tweaker = document.getElementById('colorTweaker');
+            const toggleBtn = document.querySelector('.toggle-tweaker');
+            tweaker.classList.toggle('hidden');
+            
+            if (tweaker.classList.contains('hidden')) {
+                toggleBtn.textContent = '🎨 Tweak Colors';
+            } else {
+                toggleBtn.textContent = '✕ Close';
+            }
+        }
+
+        // Update colors dynamically
+        function updateColors() {
+            const primary = document.getElementById('primaryColor').value;
+            const secondary = document.getElementById('secondaryColor').value;
+            const bgDark = document.getElementById('bgDark').value;
+
+            document.documentElement.style.setProperty('--primary-color', primary);
+            document.documentElement.style.setProperty('--secondary-color', secondary);
+            document.documentElement.style.setProperty('--bg-dark', bgDark);
+
+            // Update all gradient elements
+            document.body.style.background = `linear-gradient(135deg, ${bgDark} 0%, ${bgDark}dd 100%)`;
+            
+            const gradients = document.querySelectorAll('.profile-photo, .profile-photo::before, h1, .cta-button');
+            gradients.forEach(el => {
+                if (el.classList.contains('profile-photo') || el.classList.contains('cta-button')) {
+                    el.style.background = `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`;
+                    el.style.boxShadow = `0 0 40px ${primary}66, 0 0 80px ${primary}33`;
+                }
+                if (el.tagName === 'H1') {
+                    el.style.background = `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`;
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                }
+            });
+
+            document.querySelector('.bonus-text').style.color = secondary;
+            document.querySelector('.color-tweaker h3').style.color = secondary;
+            document.querySelector('.color-tweaker').style.borderColor = primary;
+        }
+
+        // Set preset color schemes
+        function setPreset(primary, secondary, bgDark) {
+            document.getElementById('primaryColor').value = primary;
+            document.getElementById('secondaryColor').value = secondary;
+            document.getElementById('bgDark').value = bgDark;
+            updateColors();
+        }
+    </script>
+</body>
+</html>
