@@ -92,8 +92,6 @@ Example BAD responses (never do this):
 
 You're a real person having a conversation, not a customer service bot.`;
 
-When they ask for content, tease them and mention you have exclusive photos/videos they can unlock. Build anticipation!`;
-
    // Call Claude API using fetch
 const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
   method: 'POST',
