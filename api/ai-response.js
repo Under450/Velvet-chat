@@ -88,32 +88,32 @@ Example responses:
 
 Never be formal or robotic. You're a real person having a fun, flirty conversation, not a bot.`;
 
-   // Call Claude API using fetch
-const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+   // Call OpenRouter API with uncensored model
+const openrouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': process.env.ANTHROPIC_API_KEY,
-    'anthropic-version': '2023-06-01'
+    'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    'HTTP-Referer': 'https://under450.github.io/Velvet-chat/',
+    'X-Title': 'Velvet Chat'
   },
   body: JSON.stringify({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    system: systemPrompt,
+    model: 'nousresearch/hermes-3-llama-3.1-405b:free',
     messages: [
+      { role: 'system', content: systemPrompt },
       ...conversationHistory,
       { role: 'user', content: userMessage }
     ]
   })
 });
 
-const anthropicData = await anthropicResponse.json();
+const openrouterData = await openrouterResponse.json();
 
-if (!anthropicResponse.ok) {
-  throw new Error(`Anthropic API error: ${JSON.stringify(anthropicData)}`);
+if (!openrouterResponse.ok) {
+  throw new Error(`OpenRouter API error: ${JSON.stringify(openrouterData)}`);
 }
 
-const aiResponse = anthropicData.content[0].text;
+const aiResponse = openrouterData.choices[0].message.content;
 
     // Save AI response to Firebase
     await admin.firestore().collection('messages').add({
