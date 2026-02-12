@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Calculator">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="description" content="Calculator app">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #000;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .calculator-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .calculator-header {
+            padding: 50px 20px 10px 20px;
+        }
+
+        .calculator-title {
+            color: #fff;
+            font-size: 14px;
+            opacity: 0.6;
+            text-align: center;
+        }
+
+        .calculator-display {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            padding: 20px 30px 10px 30px;
+            font-size: 90px;
+            font-weight: 200;
+            color: #fff;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        .calculator-buttons {
+            padding: 0 12px 12px 12px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .calc-btn {
+            background: #333333;
+            color: #fff;
+            border: none;
+            font-size: 38px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-weight: 400;
+            flex: 1;
+            height: 75px;
+            border-radius: 37.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calc-btn:active {
+            opacity: 0.5;
+        }
+
+        .calc-btn.operator {
+            background: #FF9F0A;
+            color: #fff;
+            font-size: 42px;
+        }
+
+        .calc-btn.operator:active {
+            opacity: 0.7;
+        }
+
+        .calc-btn.operator.active {
+            background: #fff;
+            color: #FF9F0A;
+        }
+
+        .calc-btn.function {
+            background: #A6A6A6;
+            color: #000;
+            font-size: 32px;
+        }
+
+        .calc-btn.function:active {
+            opacity: 0.7;
+        }
+
+        .calc-btn.zero {
+            flex: 2.15;
+            justify-content: flex-start;
+            padding-left: 30px;
+        }
+
+        .calc-btn.backspace {
+            font-size: 28px;
+        }
+
+        /* Hidden success message */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 122, 255, 0.95);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .success-message.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <div class="calculator-title">Calculator</div>
+        </div>
+        
+        <div class="calculator-display" id="calcDisplay">0</div>
+        
+        <div class="calculator-buttons">
+            <!-- Row 1 -->
+            <div class="button-row">
+                <button class="calc-btn function" onclick="calcAllClear()">AC</button>
+                <button class="calc-btn function" onclick="calcToggleSign()">+/-</button>
+                <button class="calc-btn function" onclick="calcPercent()">%</button>
+                <button class="calc-btn operator" onclick="calcOperator('÷')">÷</button>
+            </div>
+            
+            <!-- Row 2 -->
+            <div class="button-row">
+                <button class="calc-btn" onclick="calcNumber('7')">7</button>
+                <button class="calc-btn" onclick="calcNumber('8')">8</button>
+                <button class="calc-btn" onclick="calcNumber('9')">9</button>
+                <button class="calc-btn operator" onclick="calcOperator('×')">×</button>
+            </div>
+            
+            <!-- Row 3 -->
+            <div class="button-row">
+                <button class="calc-btn" onclick="calcNumber('4')">4</button>
+                <button class="calc-btn" onclick="calcNumber('5')">5</button>
+                <button class="calc-btn" onclick="calcNumber('6')">6</button>
+                <button class="calc-btn operator" onclick="calcOperator('-')">−</button>
+            </div>
+            
+            <!-- Row 4 -->
+            <div class="button-row">
+                <button class="calc-btn" onclick="calcNumber('1')">1</button>
+                <button class="calc-btn" onclick="calcNumber('2')">2</button>
+                <button class="calc-btn" onclick="calcNumber('3')">3</button>
+                <button class="calc-btn operator" onclick="calcOperator('+')">+</button>
+            </div>
+            
+            <!-- Row 5 -->
+            <div class="button-row">
+                <button class="calc-btn zero" onclick="calcNumber('0')">0</button>
+                <button class="calc-btn" onclick="calcDecimal()">.</button>
+                <button class="calc-btn operator" onclick="calcEquals()">=</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">Unlocked! 😊</div>
+
+    <script type="module">
+        // Import Firebase from CDN (works without local server)
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Secret passcode to unlock
+        const SECRET_CODE = '1234.';
+
+        // Calculator state
+        let calcValue = '0';
+        let calcPrevValue = null;
+        let calcOperatorValue = null;
+        let waitingForOperand = false;
+
+        function updateCalcDisplay() {
+            const display = document.getElementById('calcDisplay');
+            const length = calcValue.length;
+            
+            // Dynamic font sizing like iPhone
+            if (length <= 6) {
+                display.style.fontSize = '90px';
+            } else if (length <= 8) {
+                display.style.fontSize = '70px';
+            } else if (length <= 10) {
+                display.style.fontSize = '55px';
+            } else {
+                display.style.fontSize = '45px';
+            }
+            
+            display.textContent = calcValue;
+        }
+
+        window.calcAllClear = function() {
+            calcValue = '0';
+            calcPrevValue = null;
+            calcOperatorValue = null;
+            waitingForOperand = false;
+            updateCalcDisplay();
+        }
+
+        window.calcNumber = function(num) {
+            if (waitingForOperand) {
+                calcValue = String(num);
+                waitingForOperand = false;
+            } else {
+                calcValue = calcValue === '0' ? String(num) : calcValue + num;
+            }
+            updateCalcDisplay();
+        }
+
+        window.calcDecimal = function() {
+            if (waitingForOperand) {
+                calcValue = '0.';
+                waitingForOperand = false;
+            } else if (calcValue.indexOf('.') === -1) {
+                calcValue += '.';
+            }
+            updateCalcDisplay();
+        }
+
+        window.calcToggleSign = function() {
+            const value = parseFloat(calcValue);
+            if (!isNaN(value)) {
+                calcValue = String(value * -1);
+                updateCalcDisplay();
+            }
+        }
+
+        window.calcPercent = function() {
+            const value = parseFloat(calcValue);
+            if (!isNaN(value)) {
+                calcValue = String(value / 100);
+                updateCalcDisplay();
+            }
+        }
+
+        window.calcOperator = function(nextOp) {
+            const inputValue = parseFloat(calcValue);
+
+            if (calcPrevValue === null) {
+                calcPrevValue = inputValue;
+            } else if (calcOperatorValue) {
+                const result = performCalculation();
+                calcValue = String(result);
+                calcPrevValue = result;
+            }
+
+            waitingForOperand = true;
+            calcOperatorValue = nextOp;
+        }
+
+        function performCalculation() {
+            const inputValue = parseFloat(calcValue);
+            const prevValue = calcPrevValue;
+
+            if (isNaN(inputValue) || isNaN(prevValue)) {
+                return inputValue;
+            }
+
+            switch (calcOperatorValue) {
+                case '+':
+                    return prevValue + inputValue;
+                case '-':
+                    return prevValue - inputValue;
+                case '×':
+                    return prevValue * inputValue;
+                case '÷':
+                    return prevValue / inputValue;
+                default:
+                    return inputValue;
+            }
+        }
+
+        window.calcEquals = function() {
+            // Check if the current value matches the secret code
+            if (calcValue === SECRET_CODE && !calcOperatorValue) {
+                // Show success message
+                const successMsg = document.getElementById('successMessage');
+                successMsg.classList.add('show');
+                
+                // Check Firebase authentication - simple currentUser check
+                const user = auth.currentUser;
+                
+                setTimeout(() => {
+                    if (user) {
+                        // User is logged in, go to chat
+                        window.location.href = 'velvet-chat.html';
+                    } else {
+                        // Not logged in, go to auth
+                        window.location.href = 'auth.html';
+                    }
+                }, 800);
+                
+                return;
+            }
+
+            // Normal calculator operation
+            const inputValue = parseFloat(calcValue);
+
+            if (calcPrevValue !== null && calcOperatorValue) {
+                const result = performCalculation();
+                calcValue = String(result);
+                calcPrevValue = null;
+                calcOperatorValue = null;
+                waitingForOperand = true;
+                updateCalcDisplay();
+            }
+        }
+
+        // Initialize display
+        updateCalcDisplay();
+
+        // Register Service Worker for PWA (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+// Hidden admin access - Secret code: 7-3-5-=.
+let secretCode = [];
+const ADMIN_CODE = ['7', '3', '5', '.','='];
+
+// Listen to all button clicks
+document.querySelectorAll('.calc-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const value = this.textContent;
+        
+        // Add to secret code array
+        secretCode.push(value);
+        
+        // Keep only last 5 presses
+        if (secretCode.length > 5) {
+            secretCode.shift();
+        }
+        
+        // Check if secret code matches
+if (JSON.stringify(secretCode) === JSON.stringify(ADMIN_CODE)) {
+    window.location.href = 'admin/admin-login.html';
+    secretCode = []; // Reset
+}
+    });
+});    </script>
+</body>
+</html>

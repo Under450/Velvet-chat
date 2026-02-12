@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Velvet Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #FFFFFF;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #000;
+            overflow: hidden;
+        }
+
+        /* Header - iMessage style */
+        .header {
+            background: #F7F7F7;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+            gap: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .back-btn {
+            font-size: 18px;
+            color: #007AFF;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .profile-pic {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #007AFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .contact-status {
+            font-size: 12px;
+            color: #8E8E93;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .credits-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .credits-btn:active {
+            transform: scale(0.95);
+            background: #0051D5;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: #007AFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+            background: #0051D5;
+        }
+
+        /* Settings Menu */
+        .settings-menu {
+            position: absolute;
+            top: 50px;
+            right: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            z-index: 1000;
+            overflow: hidden;
+            display: none;
+        }
+
+        .settings-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-item {
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #000;
+            transition: background 0.2s;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: #F2F2F7;
+        }
+
+        .menu-item:active {
+            background: #E5E5EA;
+        }
+
+        .menu-item.danger {
+            color: #FF3B30;
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Chat area - white like iMessage */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            background: #FFFFFF;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            max-width: 75%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            line-height: 1.4;
+            font-size: 15px;
+            word-wrap: break-word;
+        }
+
+        /* Creator's messages - light grey like iPhone incoming */
+        .message.creator .message-bubble {
+            background: #E8E8E8;
+            color: #000;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* User's messages - blue like iPhone outgoing */
+        .message.user .message-bubble {
+            background: #007AFF;
+            color: #FFFFFF;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #8E8E93;
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        /* Locked content */
+        .locked-content {
+            width: 200px;
+            height: 150px;
+            border-radius: 12px;
+            background: #F2F2F7;
+            border: 1px solid #E5E5EA;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: all 0.2s;
+        }
+
+        .locked-content:active {
+            transform: scale(0.98);
+            background: #E5E5EA;
+        }
+
+        .locked-icon {
+            font-size: 40px;
+        }
+
+        .unlock-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: #8E8E93;
+        }
+
+        .unlock-cost {
+            background: #007AFF;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Input area - iMessage style */
+        .input-area {
+            background: #FFFFFF;
+            padding: 8px 12px 20px 12px;
+            border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: #F2F2F7;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+        }
+
+        .input-icon {
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 10px 0;
+            color: #000;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .message-input::placeholder {
+            color: #8E8E93;
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: #007AFF;
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-btn:active {
+            background: #0051D5;
+        }
+
+        /* Scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: #C7C7CC;
+            border-radius: 3px;
+        }
+
+        /* Overlay to close menu when clicking outside */
+        .menu-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: none;
+        }
+
+        .menu-overlay.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8E8E93;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Overlay (invisible, closes menu when clicked) -->
+    <div class="menu-overlay" id="menuOverlay" onclick="closeSettingsMenu()"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="back-btn" onclick="window.location.href='index.html'">‹</div>
+            <div class="profile-pic" id="profilePic">?</div>
+            <div class="contact-info">
+                <div class="contact-name" id="creatorName">Loading...</div>
+                <div class="contact-status">Active now</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="credits-btn" onclick="window.location.href='velvet-purchase.html'">
+                <span>£££</span>
+            </button>
+            <div class="icon-btn" onclick="toggleSettingsMenu()">⚙️</div>
+            <div class="icon-btn" onclick="window.location.href='index.html'">👁️</div>
+        </div>
+    </div>
+
+    <!-- Settings Menu -->
+    <div class="settings-menu" id="settingsMenu">
+        <div class="menu-item" onclick="viewBalance()">
+            <span class="menu-icon">💰</span>
+            <span>View Balance</span>
+        </div>
+        <div class="menu-item" onclick="alert('About Velvet\n\nVersion 1.0\nSecure & Private')">
+            <span class="menu-icon">ℹ️</span>
+            <span>About</span>
+        </div>
+        <div class="menu-item" onclick="alert('Report an issue to support@velvetapp.com')">
+            <span class="menu-icon">⚠️</span>
+            <span>Report Issue</span>
+        </div>
+        <div class="menu-item danger" onclick="logout()">
+            <span class="menu-icon">🚪</span>
+            <span>Logout</span>
+        </div>
+    </div>
+
+    <!-- Chat messages -->
+    <div class="chat-container" id="chatContainer">
+        <div class="loading">Loading chat...</div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+        <div class="input-wrapper">
+            <div class="input-icon">📷</div>
+            <input type="text" class="message-input" id="messageInput" placeholder="Message">
+            <div class="input-icon">🎤</div>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentCreator = null;
+        let userData = null;
+
+        // Load creator data
+        async function loadCreator() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                // Get user data from Firestore
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (!userDoc.exists()) {
+                    alert('User data not found. Please sign up again.');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                userData = userDoc.data();
+                
+                // Check if user has any creator codes
+                if (!userData.creatorCodes || userData.creatorCodes.length === 0) {
+                    alert('No creator unlocked. Please contact support.');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                // Get the first creator code
+                const creatorCode = userData.creatorCodes[0];
+
+                // Fetch creator from backend API
+                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                const data = await response.json();
+                
+                currentCreator = data.creators.find(c => c.code === creatorCode);
+                
+                if (!currentCreator) {
+                    alert('Creator not found. Please contact support.');
+                    return;
+                }
+
+                // Update UI with creator info
+                document.getElementById('pageTitle').textContent = currentCreator.name;
+                document.getElementById('creatorName').textContent = currentCreator.name;
+                
+                // Set profile picture
+                const profilePic = document.getElementById('profilePic');
+                if (currentCreator.profilephoto && currentCreator.profilephoto !== 'https://placeholder.com/jessica.jpg') {
+                    profilePic.innerHTML = `<img src="${currentCreator.profilephoto}" alt="${currentCreator.name}">`;
+                } else {
+                    profilePic.textContent = currentCreator.name.charAt(0).toUpperCase();
+                }
+
+                // Load welcome messages
+                loadWelcomeMessages();
+                
+            } catch (error) {
+                console.error('Error loading creator:', error);
+                alert('Error loading chat. Please try again.');
+            }
+        }
+
+        // Load welcome messages
+        function loadWelcomeMessages() {
+            const chatContainer = document.getElementById('chatContainer');
+            chatContainer.innerHTML = `
+                <div class="message-time">Today ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
+                
+                <div class="message creator">
+                    <div class="message-bubble">
+                        Hey! 😊
+                    </div>
+                </div>
+
+                <div class="message creator">
+                    <div class="message-bubble">
+                        I've been thinking about you all day...
+                    </div>
+                </div>
+
+                <div class="message user">
+                    <div class="message-bubble">
+                        Hey beautiful! How are you?
+                    </div>
+                </div>
+
+                <div class="message creator">
+                    <div class="message-bubble">
+                        So much better now that you're here 💕
+                    </div>
+                </div>
+
+                <div class="message user">
+                    <div class="message-bubble">
+                        What are you up to?
+                    </div>
+                </div>
+
+                <div class="message creator">
+                    <div class="message-bubble">
+                        Just got out of the shower... want to see? 😈
+                        <div class="locked-content" onclick="showUnlockPrompt()">
+                            <div class="locked-icon">🔒</div>
+                            <div class="unlock-text">Unlock Photo</div>
+                            <div class="unlock-cost">3🍫 Chocolates</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message user">
+                    <div class="message-bubble">
+                        You're such a tease 😅
+                    </div>
+                </div>
+
+                <div class="message creator">
+                    <div class="message-bubble">
+                        Maybe just a little... 😘
+                    </div>
+                </div>
+            `;
+
+            // Auto-scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Check auth and load creator on page load
+        onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Get creator code from sessionStorage or Firestore
+        let creatorCode = sessionStorage.getItem('currentCreatorCode');
+        
+        if (!creatorCode) {
+            // Fallback: get from user's Firestore data
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData.creatorCodes && userData.creatorCodes.length > 0) {
+                    creatorCode = userData.creatorCodes[0];
+                    sessionStorage.setItem('currentCreatorCode', creatorCode);
+                }
+            }
+        }
+        
+        if (!creatorCode) {
+            alert('No creator code found. Please login again.');
+            window.location.href = 'auth.html';
+            return;
+        }
+        
+        loadCreator();
+    } else {
+        window.location.href = 'auth.html';
+    }
+});
+
+        // Toggle settings menu
+        window.toggleSettingsMenu = function() {
+            const menu = document.getElementById('settingsMenu');
+            const overlay = document.getElementById('menuOverlay');
+            menu.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        // Close settings menu
+        window.closeSettingsMenu = function() {
+            const menu = document.getElementById('settingsMenu');
+            const overlay = document.getElementById('menuOverlay');
+            menu.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        // View balance
+        window.viewBalance = function() {
+            if (userData && currentCreator) {
+                const credits = userData.credits[currentCreator.code] || 0;
+                alert(`Your Balance with ${currentCreator.name}:\n\n💰 Credits: ${credits}`);
+            } else {
+                alert('Loading balance...');
+            }
+            closeSettingsMenu();
+        }
+
+        // Logout function
+        window.logout = async function() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('Error logging out. Please try again.');
+                }
+            }
+        }
+
+        // Show unlock prompt
+        window.showUnlockPrompt = function() {
+            alert('This photo costs 3🍫 Chocolates to unlock!\n\nComing soon: Credit purchase system!');
+        }
+
+        // Send message
+window.sendMessage = async function() {
+    const input = document.getElementById('messageInput');
+    const messageText = input.value.trim();
+    
+    if (!messageText) return;
+    
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Please login first');
+            return;
+        }
+        
+        const creatorCode = sessionStorage.getItem('currentCreatorCode');
+        if (!creatorCode) {
+            alert('No creator code found');
+            return;
+        }
+        
+        console.log('Sending:', messageText);
+        
+        // Save message to Firebase
+        const messagesRef = collection(db, 'messages');
+        await addDoc(messagesRef, {
+            userId: user.uid,
+            creatorCode: creatorCode,
+            message: messageText,
+            sender: 'user',
+            timestamp: new Date(),
+            read: false
+        });
+        
+        // Add user message to chat UI
+        const chatContainer = document.getElementById('chatContainer');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user';
+        userMsg.innerHTML = `<div class="message-bubble">${messageText}</div>`;
+        chatContainer.appendChild(userMsg);
+        
+       input.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message creator';
+        typingIndicator.id = 'typingIndicator';
+        typingIndicator.innerHTML = `<div class="message-bubble">
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>`;
+        chatContainer.appendChild(typingIndicator);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        // Call AI endpoint
+        const aiResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/ai-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: user.uid,
+                creatorCode: creatorCode,
+                userMessage: messageText
+            })
+        });
+        
+        const aiData = await aiResponse.json();
+        
+        // Remove typing indicator
+        document.getElementById('typingIndicator')?.remove();
+        
+        if (aiData.success) {
+            // Add creator response to chat UI
+            const creatorMsg = document.createElement('div');
+            creatorMsg.className = 'message creator';
+            creatorMsg.innerHTML = `<div class="message-bubble">${aiData.message}</div>`;
+            chatContainer.appendChild(creatorMsg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } else {
+            console.error('AI response error:', aiData.error);
+        }
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message: ' + error.message);
+        document.getElementById('typingIndicator')?.remove();
+    }
+}
+        // Enter to send
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

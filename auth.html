@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* NSFW Blur Overlay */
+        .nsfw-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.3s;
+        }
+        
+        .nsfw-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .nsfw-content {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+            padding: 40px;
+        }
+        
+        .nsfw-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .nsfw-content h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .nsfw-content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .quick-exit {
+            margin-bottom: 30px;
+        }
+        
+        .exit-link {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .exit-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .exit-link .eye {
+            font-size: 20px;
+        }
+        
+        .reveal-btn {
+            background: white;
+            color: #000;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 auto;
+            transition: transform 0.2s;
+        }
+        
+        .reveal-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .reveal-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            font-size: 32px;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .panic-button {
+            background: rgba(30, 58, 138, 0.1);
+            border: 2px solid #1e3a8a;
+            border-radius: 10px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .panic-button:hover {
+            background: #1e3a8a;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .panic-button:active {
+            transform: scale(0.95);
+        }
+        
+        .panic-button .eye-icon {
+            font-size: 18px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #1e3a8a;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            background: #1e3a8a;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #15306d;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .social-btns {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .social-btn:hover {
+            border-color: #1e3a8a;
+            color: #1e3a8a;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .age-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+        }
+        
+        .terms-container {
+            margin-bottom: 20px;
+        }
+        
+        .terms-box {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            height: 250px;
+            overflow-y: scroll;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #333;
+            background: #f9f9f9;
+        }
+        
+        .terms-box h3 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .terms-box h4 {
+            color: #1e3a8a;
+            margin: 12px 0 6px 0;
+            font-size: 13px;
+        }
+        
+        .terms-box p {
+            margin-bottom: 8px;
+        }
+        
+        .terms-box strong {
+            color: #000;
+        }
+        
+        .scroll-indicator {
+            text-align: center;
+            font-size: 12px;
+            color: #e74c3c;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .scroll-indicator.complete {
+            color: #27ae60;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .checkbox-container label {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        small {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- NSFW Blur Overlay -->
+    <div class="nsfw-overlay" id="nsfwOverlay">
+        <div class="nsfw-content">
+            <div class="nsfw-icon">🔞</div>
+            <h2>Adult Content Warning</h2>
+            <p>This website contains sexually explicit material intended for adults only (18+). By clicking below, you confirm you are of legal age and consent to view adult content.</p>
+            
+            <div class="quick-exit">
+                <a href="index.html" class="exit-link">
+                    <span class="eye">👁️</span>
+                    <span>Quick exit to calculator</span>
+                </a>
+            </div>
+            
+            <button class="reveal-btn" onclick="revealContent()">
+                <span>👁️</span>
+                <span>I am 18+ - Enter</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="auth-container">
+        <div class="logo">
+            <h1>Velvet</h1>
+            <p>Your private space</p>
+            <button class="panic-button" onclick="panicExit()">
+                <span class="eye-icon">👁️</span>
+                <span>Quick Exit</span>
+            </button>
+        </div>
+        
+        <div class="age-warning">
+            ⚠️ You must be 18 or older to use this app
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showLogin()">Login</button>
+            <button class="tab" onclick="showSignup()">Sign Up</button>
+        </div>
+        
+       <!-- Login Form -->
+<div id="loginForm">
+    <div class="form-group">
+        <label for="loginCreatorCode" id="loginCreatorCodeLabel">Creator Code *</label>
+        <input type="text" id="loginCreatorCode" placeholder="JESSICA-X7K9P2" style="text-transform: uppercase;">
+        <small>Enter your creator's code</small>
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com">
+    </div>
+    
+    <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    
+   <button class="btn" onclick="handleLogin()">Login</button>
+    
+    <div id="loginError" class="error"></div>
+</div>
+
+<!-- Signup Form -->
+<div id="signupForm" class="hidden">
+            <div class="form-group">
+                <label>Creator Code *</label>
+                <input type="text" id="creatorCodeInput" placeholder="JESSICA-X7K9P2" style="text-transform: uppercase;">
+                <small>Enter the code your creator gave you</small>
+            </div>
+
+            <div class="terms-container">
+                <label>Purchase Terms & Conditions</label>
+                <div class="terms-box" id="termsBox" onscroll="checkScroll()">
+                    <h3>Velvet App – Purchase Flow Terms</h3>
+                    
+                    <h4>Adult/Explicit Content</h4>
+                    <p>Velvet contains sexually explicit content in text, images, audio and video. You must be 18+ and it must be legal for you to access such content where you live.</p>
+                    
+                    <h4>Credits are Not Cash</h4>
+                    <p>Purchases may convert into Credits for use only inside Velvet. Credits are not legal tender, have no cash value, are non-transferable, non-exchangeable, and non-redeemable for cash. Unused Credits automatically expire after 6 months of account inactivity and may be forfeited on breach or fraud.</p>
+                    
+                    <h4>Delivery & No Refunds</h4>
+                    <p>Unlocks and top-ups deliver immediately (crediting your wallet and/or immediate access to digital content/messaging). To the maximum extent permitted by law, all sales are final and non-refundable once delivery starts.</p>
+                    
+                    <h4>UK/EU Cooling-Off Waiver</h4>
+                    <p>By proceeding you request immediate supply of digital content and acknowledge that your statutory right to cancel is lost once delivery/messaging begins.</p>
+                    
+                    <h4>No Chargebacks for Delivered Content</h4>
+                    <p>You agree not to dispute or charge back delivered digital content. Billing issues will be raised with Velvet support.</p>
+                    
+                    <h4>Full Terms & Privacy</h4>
+                    <p>By creating an account, you accept our complete <strong>Terms of Use</strong> and <strong>Privacy Notice</strong>. Key points include:</p>
+                    
+                    <p><strong>Eligibility:</strong> Strictly 18+. We may require ID verification.</p>
+                    
+                    <p><strong>Account Security:</strong> Keep credentials secure. You're responsible for all activity under your account.</p>
+                    
+                    <p><strong>Prohibited Content:</strong> No minors, age-play under 18, incest, non-consensual content, trafficking, bestiality, extreme violence, weapons, doxxing, extortion, impersonation, illegal drugs, hate speech, or malware.</p>
+                    
+                    <p><strong>Content Rights:</strong> Models own their content but grant Velvet a licence to host, display, and promote. Clients receive personal viewing rights only - no downloads, redistribution, or recording.</p>
+                    
+                    <p><strong>Payments:</strong> Processed by third-party payment processors (e.g., Stripe). All purchases are final once delivered. We may hold reserves for chargebacks and fraud prevention.</p>
+                    
+                    <p><strong>Model Revenue:</strong> 50/50 split after deducting processing fees, taxes, and platform costs (AI moderation, storage, bandwidth). Minimum payout thresholds apply.</p>
+                    
+                    <p><strong>Privacy:</strong> We collect and process personal data including ID verification, payment details, and activity data. Adult content preferences may be inferred from your usage.</p>
+                    
+                    <p><strong>Moderation:</strong> We use automated tools and human review. Content violating our guidelines may be removed. Accounts may be suspended or terminated for violations.</p>
+                    
+                    <p><strong>Liability:</strong> Services provided "as is" without warranties. We don't endorse user content. Our liability is limited to the maximum extent permitted by law.</p>
+                    
+                    <p><strong>Termination:</strong> Either party may terminate. Upon termination, your access ends and accrued payment obligations survive.</p>
+                    
+                    <p><strong>Governing Law:</strong> These Terms are governed by the laws of England & Wales.</p>
+                    
+                    <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;"><strong>Contact:</strong> For questions, contact us at support@velvetapp.com</p>
+                    
+                    <p style="margin-top: 10px; font-size: 11px; color: #666;">Last updated: 06 February 2026</p>
+                </div>
+                <div class="scroll-indicator" id="scrollIndicator">
+                    ⬇️ Scroll to read all terms (0%)
+                </div>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="termsCheckbox" onchange="updateSignupButton()">
+                <label for="termsCheckbox">
+                    I've read the Purchase Terms above in full and I agree. I am 18+ and permitted to access adult content. I understand that Credits are not cash and may expire; purchases are final and non-refundable once delivery starts; my UK/EU cooling-off right ends on delivery; and I will not charge back delivered content.
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="signupEmail" placeholder="your@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Password (min 8 characters)</label>
+                <input type="password" id="signupPassword" placeholder="••••••••">
+            </div>
+            
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="signupConfirm" placeholder="••••••••">
+            </div>
+            
+            <button class="btn" id="signupBtn" onclick="handleSignup()" disabled>Create Account</button>
+            
+            <div id="signupError" class="error"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let termsScrolled = false;
+        let termsAccepted = false;
+        
+        window.revealContent = function() {
+            document.getElementById('nsfwOverlay').classList.add('hidden');
+        }
+        
+        window.panicExit = function() {
+            window.location.href = 'index.html';
+        }
+        
+        window.checkScroll = function() {
+            const termsBox = document.getElementById('termsBox');
+            const scrollIndicator = document.getElementById('scrollIndicator');
+            
+            const scrollPercentage = Math.round((termsBox.scrollTop / (termsBox.scrollHeight - termsBox.clientHeight)) * 100);
+            
+            if (scrollPercentage >= 99) {
+                termsScrolled = true;
+                scrollIndicator.textContent = `📄 Scroll complete (${scrollPercentage}%) - Now tick the box below`;
+                scrollIndicator.classList.add('complete');
+            } else {
+                termsScrolled = false;
+                scrollIndicator.textContent = `⬇️ Scroll to read all terms (${scrollPercentage}%)`;
+                scrollIndicator.classList.remove('complete');
+            }
+            
+            updateSignupButton();
+        }
+        
+        window.updateSignupButton = function() {
+            const checkbox = document.getElementById('termsCheckbox');
+            const signupBtn = document.getElementById('signupBtn');
+            
+            termsAccepted = checkbox.checked;
+            signupBtn.disabled = !(termsScrolled && termsAccepted);
+        }
+        
+        window.showLogin = function() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.querySelectorAll('.tab')[1].classList.remove('active');
+        }
+        
+        window.showSignup = function() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            document.querySelectorAll('.tab')[0].classList.remove('active');
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            
+            termsScrolled = false;
+            termsAccepted = false;
+            document.getElementById('termsCheckbox').checked = false;
+            document.getElementById('signupBtn').disabled = true;
+            document.getElementById('scrollIndicator').textContent = '⬇️ Scroll to read all terms (0%)';
+            document.getElementById('scrollIndicator').classList.remove('complete');
+            document.getElementById('termsBox').scrollTop = 0;
+        }
+        // Update creator code label dynamically
+async function updateCreatorCodeLabel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get('code');
+    
+    if (codeFromUrl) {
+        try {
+            const response = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+            const data = await response.json();
+            const creator = data.creators.find(c => c.code === codeFromUrl.toUpperCase());
+            
+            if (creator) {
+                document.getElementById('loginCreatorCodeLabel').textContent = `Add ${creator.name} Creator Code here`;
+                document.getElementById('loginCreatorCode').value = codeFromUrl.toUpperCase();
+            }
+        } catch (error) {
+            console.error('Error fetching creator:', error);
+        }
+    }
+}
+
+// Call on page load
+updateCreatorCodeLabel();
+window.handleLogin = async function() {
+    const creatorCode = document.getElementById('loginCreatorCode').value.trim().toUpperCase();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const errorDiv = document.getElementById('loginError');
+    
+    if (!creatorCode) {
+        errorDiv.textContent = 'Please enter creator code';
+        return;
+    }
+    
+    if (!email || !password) {
+        errorDiv.textContent = 'Please fill in all fields';
+        return;
+    }
+    
+    try {
+        // First authenticate with email/password
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Get user data to check creator codes
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        // Check if user document exists, create if not
+        if (!userDoc.exists()) {
+            await setDoc(doc(db, 'users', user.uid), {
+                email: user.email,
+                creatorCodes: [],
+                credits: {},
+                unlockedPhotos: [],
+                createdAt: new Date()
+            });
+        }
+        
+        const userData = userDoc.exists() ? userDoc.data() : {
+            creatorCodes: [],
+            credits: {}
+        };
+        
+        // Check if user has this creator code
+        if (!userData.creatorCodes || !userData.creatorCodes.includes(creatorCode)) {
+            // Creator code not in their list - validate it exists and add it
+            const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+            const creatorsData = await creatorsResponse.json();
+            const creatorExists = creatorsData.creators.some(c => c.code === creatorCode);
+            
+            if (!creatorExists) {
+                errorDiv.textContent = 'Invalid creator code';
+                await auth.signOut();
+                return;
+            }
+            
+            // Add new creator code to user's account
+            await setDoc(doc(db, 'users', user.uid), {
+                creatorCodes: [...(userData.creatorCodes || []), creatorCode],
+                credits: {
+                    ...(userData.credits || {}),
+                    [creatorCode]: 0
+                }
+            }, { merge: true });
+        }
+        
+        // Store current creator code in session
+        sessionStorage.setItem('currentCreatorCode', creatorCode);
+        
+        window.location.href = 'velvet-chat.html';
+    } catch (error) {
+        errorDiv.textContent = 'Invalid email, password, or creator code';
+        console.error('Login error:', error);
+    }
+}
+        
+        window.handleSignup = async function() {
+            const creatorCode = document.getElementById('creatorCodeInput').value.trim().toUpperCase();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+            const errorDiv = document.getElementById('signupError');
+            
+            if (!creatorCode) {
+                errorDiv.textContent = 'Please enter your creator code';
+                return;
+            }
+            
+            if (!termsScrolled) {
+                errorDiv.textContent = 'Please read all terms and conditions';
+                return;
+            }
+            
+            if (!termsAccepted) {
+                errorDiv.textContent = 'Please accept the terms and conditions';
+                return;
+            }
+            
+            if (!email || !password || !confirm) {
+                errorDiv.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            if (password.length < 8) {
+                errorDiv.textContent = 'Password must be at least 8 characters';
+                return;
+            }
+            
+            if (password !== confirm) {
+                errorDiv.textContent = 'Passwords do not match';
+                return;
+            }
+
+            // Validate creator code exists
+            try {
+                const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                const creatorsData = await creatorsResponse.json();
+                const creatorExists = creatorsData.creators.some(c => c.code === creatorCode);
+                
+                if (!creatorExists) {
+                    errorDiv.textContent = 'Invalid creator code';
+                    return;
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error validating creator code';
+                console.error('Creator validation error:', error);
+                return;
+            }
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                await setDoc(doc(db, 'users', user.uid), {
+                    email: user.email,
+                    creatorCodes: [creatorCode],
+                    credits: {
+                        [creatorCode]: 0
+                    },
+                    unlockedPhotos: [],
+                    createdAt: new Date(),
+                    termsAcceptedAt: new Date(),
+                    termsVersion: '2026-02-06'
+                });
+                
+                window.location.href = 'velvet-chat.html';
+            } catch (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                console.error('Signup error:', error);
+            }
+        }
+        
+        window.handleGoogleLogin = async function() {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                await setDoc(doc(db, 'users', user.uid), {
+                    email: user.email,
+                    creatorCodes: [],
+                    credits: {},
+                    unlockedPhotos: [],
+                    createdAt: new Date()
+                }, { merge: true });
+                
+                window.location.href = 'velvet-chat.html';
+            } catch (error) {
+                console.error('Google login error:', error);
+            }
+        }
+        
+        window.handleAppleLogin = function() {
+            alert('Apple Sign-In requires additional setup. Coming soon!');
+        }
+    </script>
+</body>
+</html>

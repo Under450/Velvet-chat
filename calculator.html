@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .calculator {
+            background: #1c1c1c;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+            max-width: 350px;
+            width: 100%;
+        }
+        
+        .display {
+            background: #000;
+            color: white;
+            font-size: 48px;
+            padding: 30px 20px;
+            text-align: right;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .btn {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn.operator {
+            background: #ff9500;
+        }
+        
+        .btn.function {
+            background: #a5a5a5;
+            color: #000;
+        }
+        
+        .btn.zero {
+            grid-column: span 2;
+            border-radius: 35px;
+            width: 152px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="btn function" onclick="clearDisplay()">C</button>
+            <button class="btn function" onclick="toggleSign()">+/-</button>
+            <button class="btn function" onclick="percentage()">%</button>
+            <button class="btn operator" onclick="setOperator('/')">÷</button>
+            
+            <button class="btn" onclick="appendNumber('7')">7</button>
+            <button class="btn" onclick="appendNumber('8')">8</button>
+            <button class="btn" onclick="appendNumber('9')">9</button>
+            <button class="btn operator" onclick="setOperator('*')">×</button>
+            
+            <button class="btn" onclick="appendNumber('4')">4</button>
+            <button class="btn" onclick="appendNumber('5')">5</button>
+            <button class="btn" onclick="appendNumber('6')">6</button>
+            <button class="btn operator" onclick="setOperator('-')">−</button>
+            
+            <button class="btn" onclick="appendNumber('1')">1</button>
+            <button class="btn" onclick="appendNumber('2')">2</button>
+            <button class="btn" onclick="appendNumber('3')">3</button>
+            <button class="btn operator" onclick="setOperator('+')">+</button>
+            
+            <button class="btn zero" onclick="appendNumber('0')">0</button>
+            <button class="btn" onclick="appendNumber('.')">.</button>
+            <button class="btn operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './firebase.js';
+        import { onAuthStateChanged } from 'firebase/auth';
+
+        let display = document.getElementById('display');
+        let currentValue = '0';
+        let previousValue = null;
+        let operator = null;
+        let passcodeAttempt = '';
+        let isNewNumber = true;
+
+        window.clearDisplay = function() {
+            currentValue = '0';
+            previousValue = null;
+            operator = null;
+            passcodeAttempt = '';
+            isNewNumber = true;
+            updateDisplay();
+        }
+
+        window.appendNumber = function(num) {
+            passcodeAttempt += num;
+            
+            if (isNewNumber) {
+                currentValue = num;
+                isNewNumber = false;
+            } else {
+                currentValue = currentValue === '0' ? num : currentValue + num;
+            }
+            updateDisplay();
+        }
+
+        window.setOperator = function(op) {
+            passcodeAttempt += op;
+            
+            if (previousValue === null) {
+                previousValue = currentValue;
+            } else if (operator) {
+                calculate();
+            }
+            operator = op;
+            isNewNumber = true;
+        }
+
+        window.calculate = function() {
+            passcodeAttempt += '=';
+            
+            // Check for passcode 1234+=
+            if (passcodeAttempt === '1234+=') {
+                // Check authentication status
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        // User is logged in, go to chat
+                        window.location.href = 'velvet-chat.html';
+                    } else {
+                        // Not logged in, go to auth
+                        window.location.href = 'auth.html';
+                    }
+                });
+                return;
+            }
+            
+            // Normal calculator operation
+            if (previousValue === null || operator === null) {
+                return;
+            }
+
+            const prev = parseFloat(previousValue);
+            const current = parseFloat(currentValue);
+            let result;
+
+            switch (operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    result = current !== 0 ? prev / current : 'Error';
+                    break;
+                default:
+                    return;
+            }
+
+            currentValue = result.toString();
+            previousValue = null;
+            operator = null;
+            isNewNumber = true;
+            passcodeAttempt = '';
+            updateDisplay();
+        }
+
+        window.toggleSign = function() {
+            currentValue = (parseFloat(currentValue) * -1).toString();
+            updateDisplay();
+        }
+
+        window.percentage = function() {
+            currentValue = (parseFloat(currentValue) / 100).toString();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            display.textContent = currentValue;
+        }
+    </script>
+</body>
+</html>
