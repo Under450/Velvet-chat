@@ -98,7 +98,7 @@ const openrouterResponse = await fetch('https://openrouter.ai/api/v1/chat/comple
     'X-Title': 'Velvet Chat'
   },
   body: JSON.stringify({
-    model: 'meta-llama/llama-3.1-8b-instruct:free',
+    model: 'mistralai/mistral-7b-instruct',
     messages: [
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
