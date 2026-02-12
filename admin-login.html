@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet Admin Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            font-size: 32px;
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            background: #1e3a8a;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #15306d;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            margin: 15px 0;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎀 Velvet Admin</h1>
+            <p>Secure access only</p>
+        </div>
+        
+        <div class="form-group">
+            <label>Admin Email</label>
+            <input type="email" id="adminEmail" placeholder="admin@velvet.com" autocomplete="off">
+        </div>
+        
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="adminPassword" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        
+        <button class="btn" onclick="handleAdminLogin()">Login</button>
+        
+        <div id="errorDiv" class="error"></div>
+
+        <div class="links">
+            <a href="#" onclick="handlePasswordReset(); return false;">Forgot password?</a>
+            <div class="divider">•</div>
+            <a href="admin-request.html">Don't have access? Request here</a>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        window.handleAdminLogin = async function() {
+            const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('errorDiv');
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            try {
+                // Authenticate with Firebase
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Check admin status in Firestore
+                const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+                
+                if (!adminDoc.exists()) {
+                    errorDiv.textContent = 'No admin access found. Please request access first.';
+                    await auth.signOut();
+                    return;
+                }
+
+                const adminData = adminDoc.data();
+
+                if (adminData.status === 'pending') {
+                    errorDiv.innerHTML = '⏳ Your admin request is pending approval. You will receive an email within 24 hours.';
+                    await auth.signOut();
+                    return;
+                }
+
+                if (adminData.status === 'rejected') {
+                    errorDiv.textContent = 'Your admin request was not approved. Please contact support.';
+                    await auth.signOut();
+                    return;
+                }
+
+                if (adminData.status === 'approved') {
+                    // Success! Redirect to admin panel
+                    window.location.href = 'creators.html';
+                } else {
+                    errorDiv.textContent = 'Invalid admin status. Please contact support.';
+                    await auth.signOut();
+                }
+                
+            } catch (error) {
+                errorDiv.textContent = 'Invalid email or password';
+                console.error('Login error:', error);
+            }
+        }
+
+        // Password reset
+        window.handlePasswordReset = async function() {
+            const email = document.getElementById('adminEmail').value.trim().toLowerCase();
+            
+            if (!email) {
+                alert('Please enter your email address first');
+                return;
+            }
+            
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert('✓ Password reset email sent! Check your inbox.');
+            } catch (error) {
+                console.error('Password reset error:', error);
+                alert('Error sending reset email. Please try again.');
+            }
+        }
+        
+        // Enter key handlers
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleAdminLogin();
+        });
+    </script>
+</body>
+</html>
