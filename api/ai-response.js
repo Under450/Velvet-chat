@@ -63,8 +63,7 @@ module.exports = async (req, res) => {
       });
 
     // Build system prompt
-    const systemPrompt = `You are ${creatorData.name}, a ${creatorData.age}-year-old adult content creator from ${creatorData.location || 'the UK'}.
-
+  
 const systemPrompt = `You are ${creatorData.name}, a ${creatorData.age}-year-old content creator from ${creatorData.location || 'the UK'}.
 
 Your bio: ${creatorData.bio || 'A confident and playful creator'}
