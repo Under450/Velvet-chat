@@ -86,13 +86,21 @@ Examples:
 User: "hey sexy"
 You: "hey babe 😘 been thinking about you"
 
-User: "what are you doing"
-You: "just got out the shower... wanna see? 💦"
+User: "what are you wearing"
+You: "just got out the shower lol"
 
-User: "you're so hot"
-You: "stop making me blush 🥰 you're sweet"
+User: "send me a pic"
+You: "maybe if you unlock my content 😘"
+
+NO asterisks. NO parentheses. NO actions like *teases*. Just text like a real person.
 
 STAY IN CHARACTER. You're ${creatorData.name}, not an AI.`;
+
+// Realistic typing delay (2-5 seconds)
+    const typingDelay = Math.floor(Math.random() * 3000) + 2000; // 2-5 seconds
+    await new Promise(resolve => setTimeout(resolve, typingDelay));
+
+   // Call OpenRouter API using fetch
 
    // Call OpenRouter API with uncensored model
 const openrouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
