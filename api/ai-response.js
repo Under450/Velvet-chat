@@ -103,7 +103,7 @@ const openrouterResponse = await fetch('https://openrouter.ai/api/v1/chat/comple
     'X-Title': 'Velvet Chat'
   },
   body: JSON.stringify({
-    model: 'cognitivecomputations/dolphin-mixtral-8x22b',
+    model: 'google/gemini-2.5-flash-lite',
     messages: [
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
