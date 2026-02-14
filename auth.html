@@ -224,7 +224,7 @@
             border-color: #1e3a8a;
         }
         
-        .btn {
+        .btn, .auth-btn {
             width: 100%;
             padding: 16px;
             border: none;
@@ -237,11 +237,11 @@
             transition: background 0.3s;
         }
         
-        .btn:hover:not(:disabled) {
+        .btn:hover:not(:disabled), .auth-btn:hover:not(:disabled) {
             background: #15306d;
         }
         
-        .btn:disabled {
+        .btn:disabled, .auth-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
@@ -251,39 +251,6 @@
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            color: #999;
-            font-size: 14px;
-        }
-        
-        .social-btns {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .social-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        
-        .social-btn:hover {
-            border-color: #1e3a8a;
-            color: #1e3a8a;
         }
         
         .hidden {
@@ -381,15 +348,16 @@
             margin-top: 5px;
             display: block;
         }
-    
-.creator-btn {
-    background: #6B46C1 !important;
-}
-
-.creator-btn:hover {
-    background: #553C9A !important;
-}
-</style>
+        
+        .creator-btn {
+            background: #6B46C1 !important;
+            margin-top: 10px;
+        }
+        
+        .creator-btn:hover {
+            background: #553C9A !important;
+        }
+    </style>
 </head>
 <body>
     <!-- NSFW Blur Overlay -->
@@ -435,9 +403,9 @@
        <!-- Login Form -->
 <div id="loginForm">
     <div class="form-group">
-    <label>Creator Code (Optional - for chatting with creators)</label>
-    <input type="text" id="signupCode" placeholder="Leave blank if you're a creator">
-</div>
+        <label>Creator Code (Optional - for chatting with creators)</label>
+        <input type="text" id="loginCreatorCode" placeholder="Leave blank if you're a creator">
+    </div>
 
     <div class="form-group">
         <label>Email</label>
@@ -449,13 +417,8 @@
         <input type="password" id="loginPassword" placeholder="••••••••">
     </div>
     
-  <!-- Existing login button -->
-<button class="auth-btn" onclick="handleLogin()">Login</button>
-
-<!-- ADD THIS NEW BUTTON -->
-<button class="auth-btn creator-btn" onclick="handleCreatorLogin()" style="background: #6B46C1; margin-top: 10px;">
-    Creator Login
-</button>
+    <button class="auth-btn" onclick="handleLogin()">Login</button>
+    <button class="auth-btn creator-btn" onclick="handleCreatorLogin()">Creator Login</button>
     
     <div id="loginError" class="error"></div>
 </div>
@@ -463,9 +426,9 @@
 <!-- Signup Form -->
 <div id="signupForm" class="hidden">
             <div class="form-group">
-                <label>Creator Code *</label>
-                <input type="text" id="creatorCodeInput" placeholder="JESSICA-X7K9P2" style="text-transform: uppercase;">
-                <small>Enter the code your creator gave you</small>
+                <label>Creator Code (Optional - for chatting with creators)</label>
+                <input type="text" id="creatorCodeInput" placeholder="Leave blank if you're a creator" style="text-transform: uppercase;">
+                <small>Enter the code your creator gave you (leave blank if you're a creator)</small>
             </div>
 
             <div class="terms-container">
@@ -552,8 +515,8 @@
     
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         const firebaseConfig = {
             apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
@@ -627,117 +590,71 @@
             document.getElementById('scrollIndicator').classList.remove('complete');
             document.getElementById('termsBox').scrollTop = 0;
         }
-        // Update creator code label dynamically
-async function updateCreatorCodeLabel() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeFromUrl = urlParams.get('code');
-    
-    if (codeFromUrl) {
-        try {
-            const response = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
-            const data = await response.json();
-            const creator = data.creators.find(c => c.code === codeFromUrl.toUpperCase());
+
+        window.handleLogin = async function() {
+            const code = document.getElementById('loginCreatorCode').value.trim().toUpperCase();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
             
-            if (creator) {
-                document.getElementById('loginCreatorCodeLabel').textContent = `Add ${creator.name} Creator Code here`;
-                document.getElementById('loginCreatorCode').value = codeFromUrl.toUpperCase();
-            }
-        } catch (error) {
-            console.error('Error fetching creator:', error);
-        }
-    }
-}
-
-// Call on page load
-updateCreatorCodeLabel();
-window.handleLogin = async function() {
-    const creatorCode = document.getElementById('loginCreatorCode').value.trim().toUpperCase();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const errorDiv = document.getElementById('loginError');
-    
-    if (!creatorCode) {
-        errorDiv.textContent = 'Please enter creator code';
-        return;
-    }
-    
-    if (!email || !password) {
-        errorDiv.textContent = 'Please fill in all fields';
-        return;
-    }
-    
-    try {
-        // First authenticate with email/password
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // Get user data to check creator codes
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        
-        // Check if user document exists, create if not
-        if (!userDoc.exists()) {
-            const userData = {
-    email: email,
-    createdAt: new Date()
-};
-
-if (code) {
-    userData.creatorCodes = [code];
-    userData.credits = { [code]: 0 };
-}
-
-await setDoc(doc(db, 'users', user.uid), userData);
-        }
-        
-        const userData = userDoc.exists() ? userDoc.data() : {
-            creatorCodes: [],
-            credits: {}
-        };
-        
-        // Check if user has this creator code
-        if (!userData.creatorCodes || !userData.creatorCodes.includes(creatorCode)) {
-            // Creator code not in their list - validate it exists and add it
-            const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
-            const creatorsData = await creatorsResponse.json();
-            const creatorExists = creatorsData.creators.some(c => c.code === creatorCode);
-            
-            if (!creatorExists) {
-                errorDiv.textContent = 'Invalid creator code';
-                await auth.signOut();
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter email and password';
                 return;
             }
             
-            // Add new creator code to user's account
-            await setDoc(doc(db, 'users', user.uid), {
-                creatorCodes: [...(userData.creatorCodes || []), creatorCode],
-                credits: {
-                    ...(userData.credits || {}),
-                    [creatorCode]: 0
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                if (code) {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    
+                    if (!userDoc.exists()) {
+                        await setDoc(doc(db, 'users', user.uid), {
+                            email: email,
+                            creatorCodes: [code],
+                            credits: { [code]: 0 },
+                            createdAt: new Date()
+                        });
+                    } else {
+                        const userData = userDoc.data();
+                        if (!userData.creatorCodes || !userData.creatorCodes.includes(code)) {
+                            const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                            const creatorsData = await creatorsResponse.json();
+                            const creatorExists = creatorsData.creators.some(c => c.code === code);
+                            
+                            if (!creatorExists) {
+                                errorDiv.textContent = 'Invalid creator code';
+                                await signOut(auth);
+                                return;
+                            }
+                            
+                            await setDoc(doc(db, 'users', user.uid), {
+                                creatorCodes: [...(userData.creatorCodes || []), code],
+                                credits: {
+                                    ...(userData.credits || {}),
+                                    [code]: 0
+                                }
+                            }, { merge: true });
+                        }
+                    }
+                    
+                    sessionStorage.setItem('currentCreatorCode', code);
                 }
-            }, { merge: true });
+                
+                window.location.href = 'velvet-chat.html';
+            } catch (error) {
+                errorDiv.textContent = 'Invalid email or password';
+                console.error('Login error:', error);
+            }
         }
         
-        // Store current creator code in session
-        sessionStorage.setItem('currentCreatorCode', creatorCode);
-        
-        window.location.href = 'velvet-chat.html';
-    } catch (error) {
-        errorDiv.textContent = 'Invalid email, password, or creator code';
-        console.error('Login error:', error);
-    }
-}
-        
         window.handleSignup = async function() {
-            const creatorCode = document.getElementById('creatorCodeInput').value.trim().toUpperCase();
-            const email = document.getElementById('signupEmail').value;
+            const code = document.getElementById('creatorCodeInput').value.trim().toUpperCase();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const password = document.getElementById('signupPassword').value;
             const confirm = document.getElementById('signupConfirm').value;
             const errorDiv = document.getElementById('signupError');
-            
-            if (!creatorCode) {
-                errorDiv.textContent = 'Please enter your creator code';
-                return;
-            }
             
             if (!termsScrolled) {
                 errorDiv.textContent = 'Please read all terms and conditions';
@@ -764,37 +681,40 @@ await setDoc(doc(db, 'users', user.uid), userData);
                 return;
             }
 
-            // Validate creator code exists
-            try {
-                const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
-                const creatorsData = await creatorsResponse.json();
-                const creatorExists = creatorsData.creators.some(c => c.code === creatorCode);
-                
-                if (!creatorExists) {
-                    errorDiv.textContent = 'Invalid creator code';
+            if (code) {
+                try {
+                    const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                    const creatorsData = await creatorsResponse.json();
+                    const creatorExists = creatorsData.creators.some(c => c.code === code);
+                    
+                    if (!creatorExists) {
+                        errorDiv.textContent = 'Invalid creator code';
+                        return;
+                    }
+                } catch (error) {
+                    errorDiv.textContent = 'Error validating creator code';
+                    console.error('Creator validation error:', error);
                     return;
                 }
-            } catch (error) {
-                errorDiv.textContent = 'Error validating creator code';
-                console.error('Creator validation error:', error);
-                return;
             }
             
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                await setDoc(doc(db, 'users', user.uid), {
-                    email: user.email,
-                    creatorCodes: [creatorCode],
-                    credits: {
-                        [creatorCode]: 0
-                    },
-                    unlockedPhotos: [],
+                const userData = {
+                    email: email,
                     createdAt: new Date(),
                     termsAcceptedAt: new Date(),
                     termsVersion: '2026-02-06'
-                });
+                };
+                
+                if (code) {
+                    userData.creatorCodes = [code];
+                    userData.credits = { [code]: 0 };
+                }
+                
+                await setDoc(doc(db, 'users', user.uid), userData);
                 
                 window.location.href = 'velvet-chat.html';
             } catch (error) {
@@ -802,60 +722,38 @@ await setDoc(doc(db, 'users', user.uid), userData);
                 console.error('Signup error:', error);
             }
         }
-        
-        window.handleGoogleLogin = async function() {
-            const provider = new GoogleAuthProvider();
+
+        window.handleCreatorLogin = async function() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return;
+            }
+            
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
                 
-                await setDoc(doc(db, 'users', user.uid), {
-                    email: user.email,
-                    creatorCodes: [],
-                    credits: {},
-                    unlockedPhotos: [],
-                    createdAt: new Date()
-                }, { merge: true });
+                console.log('Looking for creator with email:', user.email);
+                const creatorsQuery = query(collection(db, 'creators'), where('email', '==', user.email.toLowerCase()));
+                const creatorsSnapshot = await getDocs(creatorsQuery);
+                console.log('Found creators:', creatorsSnapshot.size);
                 
-                window.location.href = 'velvet-chat.html';
+                if (creatorsSnapshot.empty) {
+                    await signOut(auth);
+                    alert('Not authorized as creator. Email: ' + user.email + ' not found in creators.');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+                
+                window.location.href = 'creator-dashboard.html';
             } catch (error) {
-                console.error('Google login error:', error);
+                alert('Invalid email or password');
+                console.error('Creator login error:', error);
             }
         }
-        
-        window.handleAppleLogin = function() {
-            alert('Apple Sign-In requires additional setup. Coming soon!');
-        }
-// Creator login function
-window.handleCreatorLogin = async function() {
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        alert('Please enter email and password');
-        return;
-    }
-    
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // Check if user is a creator
-        const creatorDoc = await getDoc(doc(db, 'creators', user.uid));
-        
-        if (creatorDoc.exists()) {
-            // Redirect to creator dashboard
-            window.location.href = 'creator-dashboard.html';
-        } else {
-            alert('No creator account found. Please use regular login or contact admin.');
-            await signOut(auth);
-        }
-    } catch (error) {
-        alert('Invalid email or password');
-        console.error('Creator login error:', error);
-    }
-}
-
     </script>
 </body>
 </html>
