@@ -260,12 +260,14 @@
             }
             
             // Look up creator by checking if user email matches any creator email
-const creatorsQuery = query(collection(db, 'creators'), where('email', '==', user.email));
+console.log('Looking for creator with email:', user.email);
+const creatorsQuery = query(collection(db, 'creators'), where('email', '==', user.email.toLowerCase()));
 const creatorsSnapshot = await getDocs(creatorsQuery);
+console.log('Found creators:', creatorsSnapshot.size);
 
 if (creatorsSnapshot.empty) {
     await signOut(auth);
-    alert('Not authorized as creator. Please contact admin to link your account.');
+    alert('Not authorized as creator. Email: ' + user.email + ' not found in creators.');
     window.location.href = 'auth.html';
     return;
 }
