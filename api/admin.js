@@ -36,17 +36,18 @@ module.exports = async (req, res) => {
 
     // POST - Create new creator
     if (req.method === 'POST') {
-      const { name, age, location, bio, profilephoto } = req.body;
-      
-      if (!name || !age) {
-        return res.status(400).json({ error: 'Name and age are required' });
-      }
+      const { name, email, age, location, bio, profilephoto } = req.body;
+
+if (!name || !age || !email) {
+    return res.status(400).json({ error: 'Name, email, and age are required' });
+}
 
       // Generate unique 6-character code
       const code = Math.random().toString(36).substring(2, 8).toUpperCase();
 
       const creatorData = {
         name,
+	email,
         age: parseInt(age),
         location: location || '',
         bio: bio || '',

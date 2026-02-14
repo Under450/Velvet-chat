@@ -259,15 +259,19 @@
                 return;
             }
             
-            const creatorDoc = await getDoc(doc(db, 'creators', user.uid));
-            if (!creatorDoc.exists()) {
-                await signOut(auth);
-                alert('Not authorized as creator');
-                window.location.href = 'auth.html';
-                return;
-            }
-            
-            currentCreator = { id: user.uid, ...creatorDoc.data() };
+            // Look up creator by checking if user email matches any creator email
+const creatorsQuery = query(collection(db, 'creators'), where('email', '==', user.email));
+const creatorsSnapshot = await getDocs(creatorsQuery);
+
+if (creatorsSnapshot.empty) {
+    await signOut(auth);
+    alert('Not authorized as creator. Please contact admin to link your account.');
+    window.location.href = 'auth.html';
+    return;
+}
+
+const creatorDoc = creatorsSnapshot.docs[0];
+currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             document.getElementById('creatorName').textContent = `${currentCreator.name} • Code: ${currentCreator.code}`;
             loadMedia();
         });

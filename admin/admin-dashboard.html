@@ -268,13 +268,17 @@
         <div class="modal-content">
             <h2>Add New Creator</h2>
             <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="creatorName" placeholder="e.g., Jessica">
-            </div>
-            <div class="form-group">
-                <label>Age</label>
-                <input type="number" id="creatorAge" placeholder="e.g., 24">
-            </div>
+    <label>Name</label>
+    <input type="text" id="creatorName" placeholder="e.g., Jessica">
+</div>
+<div class="form-group">
+    <label>Email</label>
+    <input type="email" id="creatorEmail" placeholder="e.g., jessica@example.com">
+</div>
+<div class="form-group">
+    <label>Age</label>
+    <input type="number" id="creatorAge" placeholder="e.g., 24">
+</div>
             <div class="form-group">
                 <label>Location</label>
                 <input type="text" id="creatorLocation" placeholder="e.g., Los Angeles, CA">
@@ -390,18 +394,20 @@
             document.getElementById('creatorLocation').value = '';
             document.getElementById('creatorBio').value = '';
             document.getElementById('creatorPhoto').value = '';
+	    document.getElementById('creatorEmail').value = '';
         }
         
         // Create creator
         window.createCreator = async function() {
             const name = document.getElementById('creatorName').value.trim();
+	    const email= document.getElementById('creatorEmail').value.trim().toLowerCase();
             const age = document.getElementById('creatorAge').value;
             const location = document.getElementById('creatorLocation').value.trim();
             const bio = document.getElementById('creatorBio').value.trim();
             const profilephoto = document.getElementById('creatorPhoto').value.trim();
             
-            if (!name || !age) {
-                alert('Name and age are required!');
+            if (!name || !age || !email) {
+                alert('Name, email and age are required!');
                 return;
             }
             
@@ -409,8 +415,7 @@
                 const response = await fetch('https://velvet-backend-zeta.vercel.app/api/admin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, age, location, bio, profilephoto })
-                });
+                    body: JSON.stringify({ name, email, age, location, bio, profilephoto })
                 
                 const data = await response.json();
                 
