@@ -416,7 +416,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, age, location, bio, profilephoto })
-                
+                });
                 const data = await response.json();
                 
                 if (data.success) {
