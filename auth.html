@@ -434,10 +434,9 @@
        <!-- Login Form -->
 <div id="loginForm">
     <div class="form-group">
-        <label for="loginCreatorCode" id="loginCreatorCodeLabel">Creator Code *</label>
-        <input type="text" id="loginCreatorCode" placeholder="JESSICA-X7K9P2" style="text-transform: uppercase;">
-        <small>Enter your creator's code</small>
-    </div>
+    <label>Creator Code (Optional - for chatting with creators)</label>
+    <input type="text" id="signupCode" placeholder="Leave blank if you're a creator">
+</div>
 
     <div class="form-group">
         <label>Email</label>
@@ -676,13 +675,17 @@ window.handleLogin = async function() {
         
         // Check if user document exists, create if not
         if (!userDoc.exists()) {
-            await setDoc(doc(db, 'users', user.uid), {
-                email: user.email,
-                creatorCodes: [],
-                credits: {},
-                unlockedPhotos: [],
-                createdAt: new Date()
-            });
+            const userData = {
+    email: email,
+    createdAt: new Date()
+};
+
+if (code) {
+    userData.creatorCodes = [code];
+    userData.credits = { [code]: 0 };
+}
+
+await setDoc(doc(db, 'users', user.uid), userData);
         }
         
         const userData = userDoc.exists() ? userDoc.data() : {
