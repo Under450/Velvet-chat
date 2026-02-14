@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6B46C1 0%, #4C1D95 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .logout-btn {
+            float: right;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .upload-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-group select,
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .upload-btn {
+            background: #6B46C1;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .upload-btn:hover {
+            background: #553C9A;
+        }
+        
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .media-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .media-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        
+        .media-info {
+            padding: 15px;
+        }
+        
+        .media-tag {
+            background: #6B46C1;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            width: 100%;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .progress {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #6B46C1;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+        <h1>💜 Creator Dashboard</h1>
+        <p id="creatorName"></p>
+    </div>
+    
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>Upload New Content</h2>
+            <div class="form-group">
+                <label>Content Type</label>
+                <select id="contentType">
+                    <option value="selfie">Selfie</option>
+                    <option value="bikini">Bikini</option>
+                    <option value="lingerie">Lingerie</option>
+                    <option value="gym">Gym/Fitness</option>
+                    <option value="casual">Casual</option>
+                    <option value="dressy">Dressy/Formal</option>
+                    <option value="video">Video</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Select File (Image or Video)</label>
+                <input type="file" id="fileInput" accept="image/*,video/*">
+            </div>
+            <div class="progress" id="uploadProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <button class="upload-btn" id="uploadBtn" onclick="uploadContent()">Upload Content</button>
+        </div>
+        
+        <!-- Media Gallery -->
+        <div class="upload-section">
+            <h2>Your Content</h2>
+            <div id="mediaContainer" class="media-grid">
+                <div class="loading">Loading your content...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        
+        let currentCreator = null;
+        
+        // Check auth
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            const creatorDoc = await getDoc(doc(db, 'creators', user.uid));
+            if (!creatorDoc.exists()) {
+                await signOut(auth);
+                alert('Not authorized as creator');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            currentCreator = { id: user.uid, ...creatorDoc.data() };
+            document.getElementById('creatorName').textContent = `${currentCreator.name} • Code: ${currentCreator.code}`;
+            loadMedia();
+        });
+        
+        // Upload content
+        window.uploadContent = async function() {
+            const fileInput = document.getElementById('fileInput');
+            const contentType = document.getElementById('contentType').value;
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            // Max 50MB
+            if (file.size > 50 * 1024 * 1024) {
+                alert('File too large. Maximum 50MB');
+                return;
+            }
+            
+            try {
+                const uploadBtn = document.getElementById('uploadBtn');
+                const progress = document.getElementById('uploadProgress');
+                const progressFill = document.getElementById('progressFill');
+                
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Uploading...';
+                progress.style.display = 'block';
+                
+                // Upload to Firebase Storage
+                const timestamp = Date.now();
+                const fileName = `${currentCreator.code}/${timestamp}_${file.name}`;
+                const storageRef = ref(storage, `creator-content/${fileName}`);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+                
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressFill.style.width = percent + '%';
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        alert('Upload failed: ' + error.message);
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Upload Content';
+                        progress.style.display = 'none';
+                    },
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        
+                        // Save to Firestore
+                        await addDoc(collection(db, 'media'), {
+                            creatorCode: currentCreator.code,
+                            creatorId: currentCreator.id,
+                            type: contentType,
+                            url: downloadURL,
+                            fileName: fileName,
+                            fileType: file.type.startsWith('image') ? 'image' : 'video',
+                            uploadedAt: new Date()
+                        });
+                        
+                        alert('✓ Content uploaded successfully!');
+                        fileInput.value = '';
+                        progressFill.style.width = '0%';
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Upload Content';
+                        progress.style.display = 'none';
+                        loadMedia();
+                    }
+                );
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Upload failed: ' + error.message);
+            }
+        }
+        
+        // Load media
+        async function loadMedia() {
+            try {
+                const q = query(collection(db, 'media'), where('creatorCode', '==', currentCreator.code));
+                const snapshot = await getDocs(q);
+                
+                const container = document.getElementById('mediaContainer');
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="loading">No content uploaded yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    const isVideo = data.fileType === 'video';
+                    
+                    return `
+                        <div class="media-card">
+                            ${isVideo ? 
+                                `<video class="media-preview" controls><source src="${data.url}"></video>` :
+                                `<img class="media-preview" src="${data.url}" alt="${data.type}">`
+                            }
+                            <div class="media-info">
+                                <div class="media-tag">${data.type}</div>
+                                <button class="delete-btn" onclick="deleteMedia('${doc.id}', '${data.fileName}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Load error:', error);
+                document.getElementById('mediaContainer').innerHTML = '<div class="loading">Error loading content</div>';
+            }
+        }
+        
+        // Delete media
+        window.deleteMedia = async function(docId, fileName) {
+            if (!confirm('Delete this content?')) return;
+            
+            try {
+                // Delete from Storage
+                const storageRef = ref(storage, `creator-content/${fileName}`);
+                await deleteObject(storageRef);
+                
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'media', docId));
+                
+                alert('✓ Content deleted');
+                loadMedia();
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Delete failed: ' + error.message);
+            }
+        }
+        
+        // Logout
+        window.logout = async function() {
+            if (confirm('Logout?')) {
+                await signOut(auth);
+                window.location.href = 'auth.html';
+            }
+        }
+    </script>
+</body>
+</html>

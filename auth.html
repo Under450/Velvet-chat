@@ -382,6 +382,13 @@
             display: block;
         }
     </style>
+.creator-btn {
+    background: #6B46C1 !important;
+}
+
+.creator-btn:hover {
+    background: #553C9A !important;
+}
 </head>
 <body>
     <!-- NSFW Blur Overlay -->
@@ -442,7 +449,13 @@
         <input type="password" id="loginPassword" placeholder="••••••••">
     </div>
     
-   <button class="btn" onclick="handleLogin()">Login</button>
+  <!-- Existing login button -->
+<button class="auth-btn" onclick="handleLogin()">Login</button>
+
+<!-- ADD THIS NEW BUTTON -->
+<button class="auth-btn creator-btn" onclick="handleCreatorLogin()" style="background: #6B46C1; margin-top: 10px;">
+    Creator Login
+</button>
     
     <div id="loginError" class="error"></div>
 </div>
@@ -809,6 +822,36 @@ window.handleLogin = async function() {
         window.handleAppleLogin = function() {
             alert('Apple Sign-In requires additional setup. Coming soon!');
         }
+// Creator login function
+window.handleCreatorLogin = async function() {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        alert('Please enter email and password');
+        return;
+    }
+    
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Check if user is a creator
+        const creatorDoc = await getDoc(doc(db, 'creators', user.uid));
+        
+        if (creatorDoc.exists()) {
+            // Redirect to creator dashboard
+            window.location.href = 'creator-dashboard.html';
+        } else {
+            alert('No creator account found. Please use regular login or contact admin.');
+            await signOut(auth);
+        }
+    } catch (error) {
+        alert('Invalid email or password');
+        console.error('Creator login error:', error);
+    }
+}
+
     </script>
 </body>
 </html>
