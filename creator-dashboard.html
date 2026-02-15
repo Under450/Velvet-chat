@@ -304,11 +304,45 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
                 uploadBtn.textContent = 'Uploading...';
                 progress.style.display = 'block';
                 
-                // Upload to Firebase Storage
+               // Upload to Firebase Storage with timeout
                 const timestamp = Date.now();
                 const fileName = `${currentCreator.code}/${timestamp}_${file.name}`;
                 const storageRef = ref(storage, `creator-content/${fileName}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
+                
+                // Force completion after upload finishes
+                await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed',
+                        (snapshot) => {
+                            const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            progressFill.style.width = percent + '%';
+                        },
+                        (error) => reject(error),
+                        () => resolve()
+                    );
+                });
+                
+                // Get download URL
+                const downloadURL = await getDownloadURL(storageRef);
+                
+                // Save to Firestore
+                await addDoc(collection(db, 'media'), {
+                    creatorCode: currentCreator.code,
+                    creatorId: currentCreator.id,
+                    type: contentType,
+                    url: downloadURL,
+                    fileName: fileName,
+                    fileType: file.type.startsWith('image') ? 'image' : 'video',
+                    uploadedAt: new Date()
+                });
+                
+                alert('✓ Content uploaded successfully!');
+                fileInput.value = '';
+                progressFill.style.width = '0%';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Content';
+                progress.style.display = 'none';
+                loadMedia();
                 
                 uploadTask.on('state_changed', 
                     (snapshot) => {
