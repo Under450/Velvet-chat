@@ -343,13 +343,8 @@
                 const user = auth.currentUser;
                 
                 setTimeout(() => {
-                    if (user) {
-                        // User is logged in, go to chat
-                        window.location.href = 'velvet-chat.html';
-                    } else {
-                        // Not logged in, go to auth
-                        window.location.href = 'auth.html';
-                    }
+                    // Always go to auth page to choose login type
+                    window.location.href = 'auth.html';
                 }, 800);
                 
                 return;
