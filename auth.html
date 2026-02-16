@@ -733,22 +733,29 @@
             }
             
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                console.log('Looking for creator with email:', user.email);
-                const creatorsQuery = query(collection(db, 'creators'), where('email', '==', user.email.toLowerCase()));
-                const creatorsSnapshot = await getDocs(creatorsQuery);
-                console.log('Found creators:', creatorsSnapshot.size);
+                const userData = {
+                    email: email,
+                    createdAt: new Date(),
+                    termsAcceptedAt: new Date(),
+                    termsVersion: '2026-02-06'
+                };
                 
-                if (creatorsSnapshot.empty) {
-                    await signOut(auth);
-                    alert('Not authorized as creator. Email: ' + user.email + ' not found in creators.');
-                    window.location.href = 'auth.html';
-                    return;
+                if (code) {
+                    userData.creatorCodes = [code];
+                    userData.credits = { [code]: 0 };
                 }
                 
-                window.location.href = 'creator-dashboard.html';
+                await setDoc(doc(db, 'users', user.uid), userData);
+                
+                if (code) {
+                    sessionStorage.setItem('currentCreatorCode', code);
+                    window.location.href = 'velvet-chat.html';
+                } else {
+                    window.location.href = 'welcome.html';
+                }
             } catch (error) {
                 alert('Invalid email or password');
                 console.error('Creator login error:', error);
