@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Velvet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .code-input-group {
+            margin: 30px 0;
+        }
+        
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #1e3a8a;
+        }
+        
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .primary-btn {
+            background: #1e3a8a;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background: #15306d;
+        }
+        
+        .secondary-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .secondary-btn:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Velvet! 🎉</h1>
+        <p>To start chatting with a creator, you need their unique code. Ask your favorite creator for their code to begin.</p>
+        
+        <div class="code-input-group">
+            <input type="text" id="creatorCode" placeholder="Enter Creator Code" maxlength="10">
+            <button class="primary-btn" onclick="submitCode()">Start Chatting</button>
+        </div>
+        
+        <button class="secondary-btn" onclick="window.location.href='creators.html'">Browse All Creators</button>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        window.submitCode = async function() {
+            const code = document.getElementById('creatorCode').value.trim().toUpperCase();
+            
+            if (!code) {
+                alert('Please enter a creator code');
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please log in first');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            try {
+                const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                const creatorsData = await creatorsResponse.json();
+                const creatorExists = creatorsData.creators.some(c => c.code === code);
+                
+                if (!creatorExists) {
+                    alert('Invalid creator code');
+                    return;
+                }
+                
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userData = userDoc.data();
+                
+                await setDoc(doc(db, 'users', user.uid), {
+                    creatorCodes: [...(userData.creatorCodes || []), code],
+                    credits: {
+                        ...(userData.credits || {}),
+                        [code]: 0
+                    }
+                }, { merge: true });
+                
+                sessionStorage.setItem('currentCreatorCode', code);
+                window.location.href = 'velvet-chat.html';
+            } catch (error) {
+                alert('Error: ' + error.message);
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
