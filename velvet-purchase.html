@@ -14,7 +14,10 @@
         .balance-bar { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
         .balance-info { color: white; }
         .balance-info .label { font-size: 14px; opacity: 0.7; }
-        .balance-info .amount { font-size: 28px; font-weight: bold; }
+        .balance-amounts { display: flex; gap: 20px; flex-wrap: wrap; }
+        .balance-token { color: white; text-align: center; }
+        .balance-token .token-amount { font-size: 22px; font-weight: bold; }
+        .balance-token .token-label { font-size: 12px; opacity: 0.7; }
         .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
         .tab { background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
         .tab.active { background: white; color: #1e3a8a; }
@@ -45,6 +48,9 @@
         .sub-features li::before { content: "✓ "; color: #27ae60; font-weight: bold; }
         .hidden { display: none; }
         .secure-badge { text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 20px; }
+        .token-guide { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 15px 20px; margin-bottom: 25px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .token-item { color: white; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .token-item span { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -52,187 +58,199 @@
         <button class="back-btn" onclick="window.location.href='velvet-chat.html'">← Back</button>
         <div>
             <h1>Buy Credits</h1>
-            <div class="subtitle">Powered by Cold Brew Coffee Co • Secure payments • (Cold Brew Coffee will appear on your Bank - enjoy your coffee 😉) </div>
+            <div class="subtitle">Powered by Cold Brew Coffee Co • Secure payments • (Cold Brew Coffee will appear on your Bank - enjoy your coffee 😉)</div>
         </div>
     </div>
 
     <div class="balance-bar">
         <div class="balance-info">
             <div class="label">Your Balance</div>
-            <div class="amount" id="userBalance">Loading...</div>
+            <div class="balance-amounts" id="userBalance">
+                <div class="balance-token"><div class="token-amount" id="bal-choc">0</div><div class="token-label">🍫 Chocolates</div></div>
+                <div class="balance-token"><div class="token-amount" id="bal-rose">0</div><div class="token-label">🌹 Roses</div></div>
+                <div class="balance-token"><div class="token-amount" id="bal-champ">0</div><div class="token-label">🥂 Champagne</div></div>
+                <div class="balance-token"><div class="token-amount" id="bal-heart">0</div><div class="token-label">❤️ Hearts</div></div>
+            </div>
         </div>
         <div style="color:rgba(255,255,255,0.7);font-size:13px;text-align:right;">Credits never expire<br>while account is active<br>Non Transferrable</div>
     </div>
 
+    <div class="token-guide">
+        <div class="token-item">🍫 <span>Chocolate = 1 message (25p)</span></div>
+        <div class="token-item">🌹 <span>Rose = 1 photo (£1.50)</span></div>
+        <div class="token-item">🥂 <span>Champagne = 1 voice note (£2.00)</span></div>
+        <div class="token-item">❤️ <span>Heart = 1 video (£5.00)</span></div>
+    </div>
+
     <div class="tabs">
-        <button class="tab active" onclick="showTab('messages')">💬 Messages</button>
-        <button class="tab" onclick="showTab('photos')">📸 Photos</button>
-        <button class="tab" onclick="showTab('voice')">🎤 Voice</button>
-        <button class="tab" onclick="showTab('videos')">🎬 Videos</button>
-        <button class="tab" onclick="showTab('subscriptions')">⭐ Subscriptions</button>
+        <button class="tab active" onclick="showTab('messages', this)">🍫 Messages</button>
+        <button class="tab" onclick="showTab('photos', this)">🌹 Photos</button>
+        <button class="tab" onclick="showTab('voice', this)">🥂 Voice</button>
+        <button class="tab" onclick="showTab('videos', this)">❤️ Videos</button>
+        <button class="tab" onclick="showTab('subscriptions', this)">⭐ Subscriptions</button>
     </div>
 
     <!-- Messages -->
     <div id="tab-messages" class="packages-grid">
         <div class="package-card">
-            <div class="package-icon">💬</div>
+            <div class="package-icon">🍫</div>
             <div class="package-name">Starter</div>
-            <div class="package-credits">60 <span>messages</span></div>
+            <div class="package-credits">60 <span>Chocolates</span></div>
             <div class="package-price">£15.00</div>
             <ul class="package-features">
+                <li>60 messages</li>
                 <li>25p per message</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('messages_60', 1500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('messages_60', 1500, '60 Chocolates - 60 Messages')">Buy Now</button>
         </div>
         <div class="package-card popular">
             <div class="popular-badge">⭐ Most Popular</div>
-            <div class="package-icon">💬</div>
+            <div class="package-icon">🍫</div>
             <div class="package-name">Popular</div>
-            <div class="package-credits">80 <span>messages</span></div>
+            <div class="package-credits">80 <span>Chocolates</span></div>
             <div class="package-price">£20.00</div>
             <ul class="package-features">
+                <li>80 messages</li>
                 <li>25p per message</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('messages_80', 2000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('messages_80', 2000, '80 Chocolates - 80 Messages')">Buy Now</button>
         </div>
         <div class="package-card">
-            <div class="package-icon">💬</div>
+            <div class="package-icon">🍫</div>
             <div class="package-name">Value</div>
-            <div class="package-credits">100 <span>messages</span></div>
+            <div class="package-credits">100 <span>Chocolates</span></div>
             <div class="package-price">£25.00</div>
             <ul class="package-features">
+                <li>100 messages</li>
                 <li>25p per message</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('messages_100', 2500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('messages_100', 2500, '100 Chocolates - 100 Messages')">Buy Now</button>
         </div>
     </div>
 
     <!-- Photos -->
     <div id="tab-photos" class="packages-grid hidden">
         <div class="package-card">
-            <div class="package-icon">📸</div>
+            <div class="package-icon">🌹</div>
             <div class="package-name">Starter</div>
-            <div class="package-credits">6 <span>photo unlocks</span></div>
+            <div class="package-credits">6 <span>Roses</span></div>
             <div class="package-price">£10.00</div>
             <ul class="package-features">
+                <li>6 photo unlocks</li>
                 <li>£1.50 per photo</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('photos_6', 1000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('photos_6', 1000, '6 Roses - 6 Photo Unlocks')">Buy Now</button>
         </div>
         <div class="package-card popular">
             <div class="popular-badge">⭐ Most Popular</div>
-            <div class="package-icon">📸</div>
+            <div class="package-icon">🌹</div>
             <div class="package-name">Popular</div>
-            <div class="package-credits">10 <span>photo unlocks</span></div>
+            <div class="package-credits">10 <span>Roses</span></div>
             <div class="package-price">£15.00</div>
             <ul class="package-features">
+                <li>10 photo unlocks</li>
                 <li>£1.50 per photo</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('photos_10', 1500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('photos_10', 1500, '10 Roses - 10 Photo Unlocks')">Buy Now</button>
         </div>
         <div class="package-card">
-            <div class="package-icon">📸</div>
+            <div class="package-icon">🌹</div>
             <div class="package-name">Value</div>
-            <div class="package-credits">14 <span>photo unlocks</span></div>
+            <div class="package-credits">14 <span>Roses</span></div>
             <div class="package-price">£20.00</div>
             <ul class="package-features">
+                <li>14 photo unlocks</li>
                 <li>£1.43 per photo</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('photos_14', 2000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('photos_14', 2000, '14 Roses - 14 Photo Unlocks')">Buy Now</button>
         </div>
     </div>
 
     <!-- Voice -->
     <div id="tab-voice" class="packages-grid hidden">
         <div class="package-card">
-            <div class="package-icon">🎤</div>
+            <div class="package-icon">🥂</div>
             <div class="package-name">Starter</div>
-            <div class="package-credits">10 <span>voice notes</span></div>
+            <div class="package-credits">10 <span>Champagnes</span></div>
             <div class="package-price">£20.00</div>
             <ul class="package-features">
+                <li>10 voice note unlocks</li>
                 <li>£2.00 per voice note</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('voice_10', 2000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('voice_10', 2000, '10 Champagnes - 10 Voice Notes')">Buy Now</button>
         </div>
         <div class="package-card popular">
             <div class="popular-badge">⭐ Most Popular</div>
-            <div class="package-icon">🎤</div>
+            <div class="package-icon">🥂</div>
             <div class="package-name">Popular</div>
-            <div class="package-credits">14 <span>voice notes</span></div>
+            <div class="package-credits">14 <span>Champagnes</span></div>
             <div class="package-price">£25.00</div>
             <ul class="package-features">
+                <li>14 voice note unlocks</li>
                 <li>£1.79 per voice note</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('voice_14', 2500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('voice_14', 2500, '14 Champagnes - 14 Voice Notes')">Buy Now</button>
         </div>
         <div class="package-card">
-            <div class="package-icon">🎤</div>
+            <div class="package-icon">🥂</div>
             <div class="package-name">Value</div>
-            <div class="package-credits">30 <span>voice notes</span></div>
+            <div class="package-credits">30 <span>Champagnes</span></div>
             <div class="package-price">£50.00</div>
             <ul class="package-features">
+                <li>30 voice note unlocks</li>
                 <li>£1.67 per voice note</li>
                 <li>Never expires</li>
-                <li>Instant delivery</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('voice_30', 5000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('voice_30', 5000, '30 Champagnes - 30 Voice Notes')">Buy Now</button>
         </div>
     </div>
 
     <!-- Videos -->
     <div id="tab-videos" class="packages-grid hidden">
         <div class="package-card">
-            <div class="package-icon">🎬</div>
+            <div class="package-icon">❤️</div>
             <div class="package-name">Starter</div>
-            <div class="package-credits">5 <span>video unlocks</span></div>
+            <div class="package-credits">5 <span>Hearts</span></div>
             <div class="package-price">£25.00</div>
             <ul class="package-features">
+                <li>5 video unlocks</li>
                 <li>£5.00 per video</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('videos_5', 2500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('videos_5', 2500, '5 Hearts - 5 Video Unlocks')">Buy Now</button>
         </div>
         <div class="package-card popular">
             <div class="popular-badge">⭐ Most Popular</div>
-            <div class="package-icon">🎬</div>
+            <div class="package-icon">❤️</div>
             <div class="package-name">Popular</div>
-            <div class="package-credits">12 <span>video unlocks</span></div>
+            <div class="package-credits">12 <span>Hearts</span></div>
             <div class="package-price">£50.00</div>
             <ul class="package-features">
+                <li>12 video unlocks</li>
                 <li>£4.17 per video</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('videos_12', 5000)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('videos_12', 5000, '12 Hearts - 12 Video Unlocks')">Buy Now</button>
         </div>
         <div class="package-card">
-            <div class="package-icon">🎬</div>
+            <div class="package-icon">❤️</div>
             <div class="package-name">Value</div>
-            <div class="package-credits">20 <span>video unlocks</span></div>
+            <div class="package-credits">20 <span>Hearts</span></div>
             <div class="package-price">£75.00</div>
             <ul class="package-features">
+                <li>20 video unlocks</li>
                 <li>£3.75 per video</li>
                 <li>Never expires</li>
-                <li>Instant access</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('videos_20', 7500)">Buy Now</button>
+            <button class="buy-btn" onclick="purchase('videos_20', 7500, '20 Hearts - 20 Video Unlocks')">Buy Now</button>
         </div>
     </div>
 
@@ -242,37 +260,37 @@
             <div class="sub-name">🥈 Silver</div>
             <div class="sub-price">£29.99 <span>/month</span></div>
             <ul class="sub-features">
-                <li>100 messages per month</li>
-                <li>5 photo unlocks</li>
+                <li>100 🍫 Chocolates</li>
+                <li>5 🌹 Roses</li>
                 <li>Priority response</li>
                 <li>Cancel anytime</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('sub_silver', 2999)">Subscribe</button>
+            <button class="buy-btn" onclick="purchase('sub_silver', 2999, 'Silver Subscription')">Subscribe</button>
         </div>
         <div class="sub-card gold">
             <div class="sub-name">🥇 Gold</div>
             <div class="sub-price">£59.99 <span>/month</span></div>
             <ul class="sub-features">
-                <li>200 messages per month</li>
-                <li>10 photo unlocks</li>
-                <li>5 voice notes</li>
+                <li>200 🍫 Chocolates</li>
+                <li>10 🌹 Roses</li>
+                <li>5 🥂 Champagnes</li>
                 <li>Priority response</li>
                 <li>Cancel anytime</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('sub_gold', 5999)">Subscribe</button>
+            <button class="buy-btn" onclick="purchase('sub_gold', 5999, 'Gold Subscription')">Subscribe</button>
         </div>
         <div class="sub-card platinum">
             <div class="sub-name">💎 Platinum</div>
             <div class="sub-price">£99.99 <span>/month</span></div>
             <ul class="sub-features">
-                <li>Unlimited messages</li>
-                <li>20 photo unlocks</li>
-                <li>10 voice notes</li>
-                <li>3 video unlocks</li>
+                <li>Unlimited 🍫 Chocolates</li>
+                <li>20 🌹 Roses</li>
+                <li>10 🥂 Champagnes</li>
+                <li>3 ❤️ Hearts</li>
                 <li>VIP priority response</li>
                 <li>Cancel anytime</li>
             </ul>
-            <button class="buy-btn" onclick="purchase('sub_platinum', 9999)">Subscribe</button>
+            <button class="buy-btn" onclick="purchase('sub_platinum', 9999, 'Platinum Subscription')">Subscribe</button>
         </div>
     </div>
 
@@ -308,21 +326,22 @@
                 const creatorCode = sessionStorage.getItem('currentCreatorCode');
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists() && creatorCode) {
-                    const credits = userDoc.data().credits?.[creatorCode] || 0;
-                    document.getElementById('userBalance').textContent = credits + ' credits';
-                } else {
-                    document.getElementById('userBalance').textContent = '0 credits';
+                    const credits = userDoc.data().credits?.[creatorCode] || {};
+                    document.getElementById('bal-choc').textContent = credits.chocolates || 0;
+                    document.getElementById('bal-rose').textContent = credits.roses || 0;
+                    document.getElementById('bal-champ').textContent = credits.champagne || 0;
+                    document.getElementById('bal-heart').textContent = credits.hearts || 0;
                 }
             } catch(e) {
-                document.getElementById('userBalance').textContent = '0 credits';
+                console.error('Balance error:', e);
             }
         });
 
-        window.showTab = function(tab) {
-            document.querySelectorAll('.packages-grid, .subscription-grid').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        window.showTab = function(tab, el) {
+            document.querySelectorAll('.packages-grid, .subscription-grid').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.remove('hidden');
-            event.target.classList.add('active');
+            el.classList.add('active');
         }
 
         window.purchase = async function(packageId, amountPence, packageName) {
