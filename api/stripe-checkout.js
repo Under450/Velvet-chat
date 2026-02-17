@@ -16,16 +16,18 @@ module.exports = async (req, res) => {
     try {
         const { packageId, amountPence, packageName, userId, creatorCode } = req.body;
 
+        const name = packageName || packageId || 'Velvet Credits';
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
                 price_data: {
                     currency: 'gbp',
                     product_data: {
-                        name: packageName,
+                        name: name,
                         description: 'Velvet Credits - Cold Brew Coffee Co',
                     },
-                    unit_amount: amountPence,
+                    unit_amount: parseInt(amountPence),
                 },
                 quantity: 1,
             }],
@@ -33,9 +35,9 @@ module.exports = async (req, res) => {
             success_url: `https://under450.github.io/Velvet-chat/velvet-purchase.html?success=true&packageId=${packageId}&userId=${userId}&creatorCode=${creatorCode}`,
             cancel_url: `https://under450.github.io/Velvet-chat/velvet-purchase.html?cancelled=true`,
             metadata: {
-                packageId,
-                userId,
-                creatorCode
+                packageId: packageId || '',
+                userId: userId || '',
+                creatorCode: creatorCode || ''
             }
         });
 
