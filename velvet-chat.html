@@ -448,7 +448,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         const firebaseConfig = {
             apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
@@ -726,10 +726,33 @@ window.sendMessage = async function() {
         document.getElementById('typingIndicator')?.remove();
         
         if (aiData.success) {
-            // Add creator response to chat UI
+            const message = aiData.message;
             const creatorMsg = document.createElement('div');
             creatorMsg.className = 'message creator';
-            creatorMsg.innerHTML = `<div class="message-bubble">${aiData.message}</div>`;
+
+            // Check for locked content tags
+            const photoMatch = message.match(/\[LOCKED_PHOTO:(\d+)\]/);
+            const videoMatch = message.match(/\[LOCKED_VIDEO:(\d+)\]/);
+
+            if (photoMatch || videoMatch) {
+                const cost = photoMatch ? photoMatch[1] : videoMatch[1];
+                const contentType = photoMatch ? 'photo' : 'video';
+                const cleanMessage = message.replace(/\[LOCKED_(PHOTO|VIDEO):\d+\]/g, '').trim();
+                const mediaId = Date.now();
+
+                creatorMsg.innerHTML = `
+                    <div class="message-bubble">
+                        ${cleanMessage}
+                        <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
+                            <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
+                            <div class="unlock-text">Unlock ${contentType === 'photo' ? 'Photo' : 'Video'}</div>
+                            <div class="unlock-cost">${cost} credits</div>
+                        </div>
+                    </div>`;
+            } else {
+                creatorMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            }
+
             chatContainer.appendChild(creatorMsg);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         } else {
@@ -742,6 +765,67 @@ window.sendMessage = async function() {
         document.getElementById('typingIndicator')?.remove();
     }
 }
+       // Unlock content
+        window.unlockContent = async function(mediaId, contentType, cost) {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const creatorCode = sessionStorage.getItem('currentCreatorCode');
+            if (!creatorCode) return;
+
+            try {
+                // Check user credits
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userData = userDoc.data();
+                const currentCredits = userData.credits?.[creatorCode] || 0;
+
+                if (currentCredits < cost) {
+                    if (confirm(`You need ${cost} credits but only have ${currentCredits}. Buy more credits?`)) {
+                        window.location.href = 'velvet-purchase.html';
+                    }
+                    return;
+                }
+
+                // Fetch media from backend
+                const mediaResponse = await fetch(`https://velvet-backend-zeta.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}&type=${contentType}`);
+                const mediaData = await mediaResponse.json();
+
+                if (!mediaData.available) {
+                    alert('No content available yet from this creator. Check back soon! 😘');
+                    return;
+                }
+
+                // Deduct credits
+                const newCredits = currentCredits - parseInt(cost);
+                await setDoc(doc(db, 'users', user.uid), {
+                    credits: { ...userData.credits, [creatorCode]: newCredits }
+                }, { merge: true });
+
+                // Record unlock
+                await addDoc(collection(db, 'unlocked_media'), {
+                    userId: user.uid,
+                    creatorCode: creatorCode,
+                    mediaId: mediaData.media.id,
+                    unlockedAt: new Date(),
+                    creditsCost: parseInt(cost)
+                });
+
+                // Show the content
+                const lockedEl = document.getElementById(`locked-${mediaId}`);
+                if (lockedEl && mediaData.media.downloadURL) {
+                    if (contentType === 'photo') {
+                        lockedEl.innerHTML = `<img src="${mediaData.media.downloadURL}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
+                    } else {
+                        lockedEl.innerHTML = `<video src="${mediaData.media.downloadURL}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Unlock error:', error);
+                alert('Error unlocking content: ' + error.message);
+            }
+        }
+
         // Enter to send
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
