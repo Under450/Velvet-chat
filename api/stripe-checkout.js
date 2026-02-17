@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
                     currency: 'gbp',
                     product_data: {
                         name: name,
-                        description: 'Velvet Credits - Cold Brew Coffee Co',
+                        description: `${name} - Velvet Credits • Cold Brew Coffee Co`,
                     },
                     unit_amount: parseInt(amountPence),
                 },
