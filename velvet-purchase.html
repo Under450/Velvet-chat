@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Credits - Velvet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); min-height: 100vh; padding: 20px; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-btn { background: white; color: #1e3a8a; border: none; padding: 10px 20px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        h1 { color: white; font-size: 28px; }
+        .subtitle { color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 5px; }
+        .balance-bar { background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .balance-info { color: white; }
+        .balance-info .label { font-size: 14px; opacity: 0.7; }
+        .balance-info .amount { font-size: 28px; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
+        .tab.active { background: white; color: #1e3a8a; }
+        .packages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .package-card { background: white; border-radius: 20px; padding: 25px; position: relative; transition: transform 0.3s; }
+        .package-card:hover { transform: translateY(-5px); }
+        .package-card.popular { border: 3px solid #1e3a8a; }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #1e3a8a; color: white; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .package-icon { font-size: 40px; margin-bottom: 15px; }
+        .package-name { font-size: 20px; font-weight: bold; color: #1e3a8a; margin-bottom: 5px; }
+        .package-credits { font-size: 32px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .package-credits span { font-size: 16px; color: #666; font-weight: normal; }
+        .package-price { font-size: 24px; font-weight: bold; color: #1e3a8a; margin-bottom: 15px; }
+        .package-features { list-style: none; margin-bottom: 20px; }
+        .package-features li { padding: 5px 0; color: #666; font-size: 14px; }
+        .package-features li::before { content: "✓ "; color: #27ae60; font-weight: bold; }
+        .buy-btn { width: 100%; padding: 14px; background: #1e3a8a; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+        .buy-btn:hover { background: #15306d; }
+        .subscription-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .sub-card { background: white; border-radius: 20px; padding: 25px; text-align: center; }
+        .sub-card.gold { border: 3px solid #FFD700; }
+        .sub-card.platinum { border: 3px solid #9B59B6; }
+        .sub-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .sub-price { font-size: 36px; font-weight: bold; color: #1e3a8a; margin-bottom: 5px; }
+        .sub-price span { font-size: 16px; color: #666; font-weight: normal; }
+        .sub-features { list-style: none; margin: 15px 0; text-align: left; }
+        .sub-features li { padding: 6px 0; color: #555; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .sub-features li::before { content: "✓ "; color: #27ae60; font-weight: bold; }
+        .hidden { display: none; }
+        .secure-badge { text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='velvet-chat.html'">← Back</button>
+        <div>
+            <h1>Buy Credits</h1>
+            <div class="subtitle">Powered by Cold Brew Coffee Co • Secure payments</div>
+        </div>
+    </div>
+
+    <div class="balance-bar">
+        <div class="balance-info">
+            <div class="label">Your Balance</div>
+            <div class="amount" id="userBalance">Loading...</div>
+        </div>
+        <div style="color:rgba(255,255,255,0.7);font-size:13px;text-align:right;">Credits never expire<br>while account is active</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('messages')">💬 Messages</button>
+        <button class="tab" onclick="showTab('photos')">📸 Photos</button>
+        <button class="tab" onclick="showTab('voice')">🎤 Voice</button>
+        <button class="tab" onclick="showTab('videos')">🎬 Videos</button>
+        <button class="tab" onclick="showTab('subscriptions')">⭐ Subscriptions</button>
+    </div>
+
+    <!-- Messages -->
+    <div id="tab-messages" class="packages-grid">
+        <div class="package-card">
+            <div class="package-icon">💬</div>
+            <div class="package-name">Starter</div>
+            <div class="package-credits">60 <span>messages</span></div>
+            <div class="package-price">£15.00</div>
+            <ul class="package-features">
+                <li>25p per message</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('messages_60', 1500)">Buy Now</button>
+        </div>
+        <div class="package-card popular">
+            <div class="popular-badge">⭐ Most Popular</div>
+            <div class="package-icon">💬</div>
+            <div class="package-name">Popular</div>
+            <div class="package-credits">80 <span>messages</span></div>
+            <div class="package-price">£20.00</div>
+            <ul class="package-features">
+                <li>25p per message</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('messages_80', 2000)">Buy Now</button>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">💬</div>
+            <div class="package-name">Value</div>
+            <div class="package-credits">100 <span>messages</span></div>
+            <div class="package-price">£25.00</div>
+            <ul class="package-features">
+                <li>25p per message</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('messages_100', 2500)">Buy Now</button>
+        </div>
+    </div>
+
+    <!-- Photos -->
+    <div id="tab-photos" class="packages-grid hidden">
+        <div class="package-card">
+            <div class="package-icon">📸</div>
+            <div class="package-name">Starter</div>
+            <div class="package-credits">6 <span>photo unlocks</span></div>
+            <div class="package-price">£10.00</div>
+            <ul class="package-features">
+                <li>£1.50 per photo</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('photos_6', 1000)">Buy Now</button>
+        </div>
+        <div class="package-card popular">
+            <div class="popular-badge">⭐ Most Popular</div>
+            <div class="package-icon">📸</div>
+            <div class="package-name">Popular</div>
+            <div class="package-credits">10 <span>photo unlocks</span></div>
+            <div class="package-price">£15.00</div>
+            <ul class="package-features">
+                <li>£1.50 per photo</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('photos_10', 1500)">Buy Now</button>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">📸</div>
+            <div class="package-name">Value</div>
+            <div class="package-credits">14 <span>photo unlocks</span></div>
+            <div class="package-price">£20.00</div>
+            <ul class="package-features">
+                <li>£1.43 per photo</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('photos_14', 2000)">Buy Now</button>
+        </div>
+    </div>
+
+    <!-- Voice -->
+    <div id="tab-voice" class="packages-grid hidden">
+        <div class="package-card">
+            <div class="package-icon">🎤</div>
+            <div class="package-name">Starter</div>
+            <div class="package-credits">10 <span>voice notes</span></div>
+            <div class="package-price">£20.00</div>
+            <ul class="package-features">
+                <li>£2.00 per voice note</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('voice_10', 2000)">Buy Now</button>
+        </div>
+        <div class="package-card popular">
+            <div class="popular-badge">⭐ Most Popular</div>
+            <div class="package-icon">🎤</div>
+            <div class="package-name">Popular</div>
+            <div class="package-credits">14 <span>voice notes</span></div>
+            <div class="package-price">£25.00</div>
+            <ul class="package-features">
+                <li>£1.79 per voice note</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('voice_14', 2500)">Buy Now</button>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">🎤</div>
+            <div class="package-name">Value</div>
+            <div class="package-credits">30 <span>voice notes</span></div>
+            <div class="package-price">£50.00</div>
+            <ul class="package-features">
+                <li>£1.67 per voice note</li>
+                <li>Never expires</li>
+                <li>Instant delivery</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('voice_30', 5000)">Buy Now</button>
+        </div>
+    </div>
+
+    <!-- Videos -->
+    <div id="tab-videos" class="packages-grid hidden">
+        <div class="package-card">
+            <div class="package-icon">🎬</div>
+            <div class="package-name">Starter</div>
+            <div class="package-credits">5 <span>video unlocks</span></div>
+            <div class="package-price">£25.00</div>
+            <ul class="package-features">
+                <li>£5.00 per video</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('videos_5', 2500)">Buy Now</button>
+        </div>
+        <div class="package-card popular">
+            <div class="popular-badge">⭐ Most Popular</div>
+            <div class="package-icon">🎬</div>
+            <div class="package-name">Popular</div>
+            <div class="package-credits">12 <span>video unlocks</span></div>
+            <div class="package-price">£50.00</div>
+            <ul class="package-features">
+                <li>£4.17 per video</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('videos_12', 5000)">Buy Now</button>
+        </div>
+        <div class="package-card">
+            <div class="package-icon">🎬</div>
+            <div class="package-name">Value</div>
+            <div class="package-credits">20 <span>video unlocks</span></div>
+            <div class="package-price">£75.00</div>
+            <ul class="package-features">
+                <li>£3.75 per video</li>
+                <li>Never expires</li>
+                <li>Instant access</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('videos_20', 7500)">Buy Now</button>
+        </div>
+    </div>
+
+    <!-- Subscriptions -->
+    <div id="tab-subscriptions" class="subscription-grid hidden">
+        <div class="sub-card">
+            <div class="sub-name">🥈 Silver</div>
+            <div class="sub-price">£29.99 <span>/month</span></div>
+            <ul class="sub-features">
+                <li>100 messages per month</li>
+                <li>5 photo unlocks</li>
+                <li>Priority response</li>
+                <li>Cancel anytime</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('sub_silver', 2999)">Subscribe</button>
+        </div>
+        <div class="sub-card gold">
+            <div class="sub-name">🥇 Gold</div>
+            <div class="sub-price">£59.99 <span>/month</span></div>
+            <ul class="sub-features">
+                <li>200 messages per month</li>
+                <li>10 photo unlocks</li>
+                <li>5 voice notes</li>
+                <li>Priority response</li>
+                <li>Cancel anytime</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('sub_gold', 5999)">Subscribe</button>
+        </div>
+        <div class="sub-card platinum">
+            <div class="sub-name">💎 Platinum</div>
+            <div class="sub-price">£99.99 <span>/month</span></div>
+            <ul class="sub-features">
+                <li>Unlimited messages</li>
+                <li>20 photo unlocks</li>
+                <li>10 voice notes</li>
+                <li>3 video unlocks</li>
+                <li>VIP priority response</li>
+                <li>Cancel anytime</li>
+            </ul>
+            <button class="buy-btn" onclick="purchase('sub_platinum', 9999)">Subscribe</button>
+        </div>
+    </div>
+
+    <div class="secure-badge">🔒 Payments processed securely by Stripe • Cold Brew Coffee Co</div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const stripe = Stripe('pk_test_51T1UwBFEbPdPCMYiP6vlpOx2Vm8M8LaOLnMIzxqsHflKFnPVydRaxuMnn1URSK44l79CQdjgDvN8mYuqohBWhmlH00xYfD5NA8');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            try {
+                const creatorCode = sessionStorage.getItem('currentCreatorCode');
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists() && creatorCode) {
+                    const credits = userDoc.data().credits?.[creatorCode] || 0;
+                    document.getElementById('userBalance').textContent = credits + ' credits';
+                } else {
+                    document.getElementById('userBalance').textContent = '0 credits';
+                }
+            } catch(e) {
+                document.getElementById('userBalance').textContent = '0 credits';
+            }
+        });
+
+        window.showTab = function(tab) {
+            document.querySelectorAll('.packages-grid, .subscription-grid').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        window.purchase = async function(packageId, amountPence) {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('Please log in first');
+                window.location.href = 'auth.html';
+                return;
+            }
+            alert('Payment system coming soon! Package: ' + packageId + ' - £' + (amountPence/100).toFixed(2));
+        }
+    </script>
+</body>
+</html>
