@@ -325,14 +325,38 @@
             event.target.classList.add('active');
         }
 
-        window.purchase = async function(packageId, amountPence) {
+        window.purchase = async function(packageId, amountPence, packageName) {
             const user = auth.currentUser;
             if (!user) {
                 alert('Please log in first');
                 window.location.href = 'auth.html';
                 return;
             }
-            alert('Payment system coming soon! Package: ' + packageId + ' - £' + (amountPence/100).toFixed(2));
+
+            try {
+                const creatorCode = sessionStorage.getItem('currentCreatorCode') || '';
+                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/stripe-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        packageId,
+                        amountPence,
+                        packageName,
+                        userId: user.uid,
+                        creatorCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Payment error: ' + error.message);
+            }
         }
     </script>
 </body>
