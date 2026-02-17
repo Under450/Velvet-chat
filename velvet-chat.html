@@ -726,9 +726,14 @@ window.sendMessage = async function() {
         document.getElementById('typingIndicator')?.remove();
         
         if (aiData.success) {
-            const message = aiData.message;
-            const creatorMsg = document.createElement('div');
-            creatorMsg.className = 'message creator';
+            const fullMessage = aiData.message;
+            const messageParts = fullMessage.split('||').map(m => m.trim()).filter(m => m);
+
+            for (let i = 0; i < messageParts.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, i * 1500));
+                const message = messageParts[i];
+                const creatorMsg = document.createElement('div');
+                creatorMsg.className = 'message creator';
 
             // Check for locked content tags
             const photoMatch = message.match(/\[LOCKED_PHOTO:(\d+)\]/);
@@ -754,7 +759,8 @@ window.sendMessage = async function() {
             }
 
             chatContainer.appendChild(creatorMsg);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
         } else {
             console.error('AI response error:', aiData.error);
         }
