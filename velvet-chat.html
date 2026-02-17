@@ -596,16 +596,19 @@
     if (user) {
         // Get creator code from sessionStorage or Firestore
         let creatorCode = sessionStorage.getItem('currentCreatorCode');
-        
         if (!creatorCode) {
             // Fallback: get from user's Firestore data
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                if (userData.creatorCodes && userData.creatorCodes.length > 0) {
-                    creatorCode = userData.creatorCodes[0];
-                    sessionStorage.setItem('currentCreatorCode', creatorCode);
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.creatorCodes && userData.creatorCodes.length > 0) {
+                        creatorCode = userData.creatorCodes[0];
+                        sessionStorage.setItem('currentCreatorCode', creatorCode);
+                    }
                 }
+            } catch(e) {
+                console.error('Firestore read error:', e);
             }
         }
         
