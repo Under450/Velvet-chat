@@ -387,7 +387,7 @@
         }
     </style>
 </head>
-<body style="visibility: hidden;">
+<body style="display: none;">
     <!-- Menu Overlay (invisible, closes menu when clicked) -->
     <div class="menu-overlay" id="menuOverlay" onclick="closeSettingsMenu()"></div>
 
@@ -595,15 +595,15 @@
     if (user) {
         const creatorCode = sessionStorage.getItem('currentCreatorCode');
         
-        if (!creatorCode) {
-            window.location.href = 'welcome.html';
+       if (!creatorCode) {
+            window.location.replace('welcome.html');
             return;
         }
         
-        document.body.style.visibility = 'visible';
+        document.body.style.display = 'flex';
         loadCreator();
     } else {
-        window.location.href = 'auth.html';
+        window.location.replace('auth.html');
     }
 });
 
