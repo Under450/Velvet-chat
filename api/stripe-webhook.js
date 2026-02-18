@@ -1,5 +1,7 @@
 const admin = require('firebase-admin');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { buffer } = require('micro');
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -13,7 +15,6 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// Token amounts per package
 const PACKAGE_CREDITS = {
   'messages_60': { chocolates: 60 },
   'messages_80': { chocolates: 80 },
@@ -32,22 +33,25 @@ const PACKAGE_CREDITS = {
   'sub_platinum': { chocolates: 999999, roses: 20, champagne: 10, hearts: 3 }
 };
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).send('Method not allowed');
   }
 
+  const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
-  let event;
 
+  let event;
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(buf, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('Webhook Error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -55,14 +59,16 @@ module.exports = async (req, res) => {
     const session = event.data.object;
     const { packageId, userId, creatorCode } = session.metadata;
 
+    console.log('Payment received:', { packageId, userId, creatorCode });
+
     if (!packageId || !userId) {
-      console.error('Missing metadata in checkout session');
+      console.error('Missing metadata');
       return res.status(200).send('OK');
     }
 
     const tokensToAdd = PACKAGE_CREDITS[packageId];
     if (!tokensToAdd) {
-      console.error('Unknown package ID:', packageId);
+      console.error('Unknown package:', packageId);
       return res.status(200).send('OK');
     }
 
@@ -86,11 +92,11 @@ module.exports = async (req, res) => {
         }
       }, { merge: true });
 
-      console.log(`Added credits to user ${userId}:`, newCredits);
+      console.log('Credits added successfully:', newCredits);
     } catch (error) {
       console.error('Error adding credits:', error);
     }
   }
 
-  res.status(200).send('OK');
+  res.status(200).json({ received: true });
 };
