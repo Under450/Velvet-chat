@@ -4,10 +4,17 @@
   ],
   "functions": {
     "api/stripe-webhook.js": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "memory": 1024
     }
   },
-  "headers": [
+  "routes": [
+    {
+      "src": "/api/stripe-webhook",
+      "methods": ["POST"],
+      "dest": "/api/stripe-webhook.js"
+    }
+  ],  "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
