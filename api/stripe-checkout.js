@@ -24,15 +24,15 @@ module.exports = async (req, res) => {
                 price_data: {
                     currency: 'gbp',
                     product_data: {
-                        name: name,
-                        description: `${name} - Velvet Credits • Cold Brew Coffee Co`,
+                        name: 'Velvet Credits - Cold Brew Coffee Co',
+                        description: name,
                     },
                     unit_amount: parseInt(amountPence),
                 },
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `https://under450.github.io/Velvet-chat/velvet-purchase.html?success=true&packageId=${packageId}&userId=${userId}&creatorCode=${creatorCode}`,
+            success_url: `https://under450.github.io/Velvet-chat/velvet-chat.html`,success=true&packageId=${packageId}&userId=${userId}&creatorCode=${creatorCode}`,
             cancel_url: `https://under450.github.io/Velvet-chat/velvet-purchase.html?cancelled=true`,
             metadata: {
                 packageId: packageId || '',
