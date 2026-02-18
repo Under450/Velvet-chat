@@ -385,6 +385,40 @@
             padding: 40px;
             color: #8E8E93;
         }
+
+        /* Typing indicator */
+        .typing-bubble {
+            background: #E8E8E8;
+            padding: 10px 14px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8E8E93;
+            animation: typingDot 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
     </style>
 </head>
 <body style="display: none;">
@@ -699,10 +733,10 @@ window.sendMessage = async function() {
         const typingIndicator = document.createElement('div');
         typingIndicator.className = 'message creator';
         typingIndicator.id = 'typingIndicator';
-        typingIndicator.innerHTML = `<div class="message-bubble">
-            <div class="typing-dots">
-                <span></span><span></span><span></span>
-            </div>
+        typingIndicator.innerHTML = `<div class="typing-bubble">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
         </div>`;
         chatContainer.appendChild(typingIndicator);
         chatContainer.scrollTop = chatContainer.scrollHeight;
