@@ -648,9 +648,10 @@
                     }
                     
                     sessionStorage.setItem('currentCreatorCode', code);
+                    window.location.href = 'velvet-chat.html';
+                } else {
+                    window.location.href = 'welcome.html';
                 }
-                
-                window.location.href = 'velvet-chat.html';
             } catch (error) {
                 errorDiv.textContent = 'Invalid email or password';
                 console.error('Login error:', error);
