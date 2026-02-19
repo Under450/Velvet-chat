@@ -78,11 +78,13 @@ module.exports = async (req, res) => {
       const userData = userDoc.data() || {};
       const currentCredits = userData.credits?.[creatorCode] || {};
 
+      const safeNumber = (val) => typeof val === 'number' && !isNaN(val) ? val : 0;
+      
       const newCredits = {
-        chocolates: (currentCredits.chocolates || 0) + (tokensToAdd.chocolates || 0),
-        roses: (currentCredits.roses || 0) + (tokensToAdd.roses || 0),
-        champagne: (currentCredits.champagne || 0) + (tokensToAdd.champagne || 0),
-        hearts: (currentCredits.hearts || 0) + (tokensToAdd.hearts || 0)
+        chocolates: safeNumber(currentCredits.chocolates) + (tokensToAdd.chocolates || 0),
+        roses: safeNumber(currentCredits.roses) + (tokensToAdd.roses || 0),
+        champagne: safeNumber(currentCredits.champagne) + (tokensToAdd.champagne || 0),
+        hearts: safeNumber(currentCredits.hearts) + (tokensToAdd.hearts || 0)
       };
 
       await userRef.set({
