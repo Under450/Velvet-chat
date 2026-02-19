@@ -805,8 +805,7 @@ window.sendMessage = async function() {
         document.getElementById('typingIndicator')?.remove();
     }
 }
-       // Unlock content
-        window.unlockContent = async function(mediaId, contentType, cost) {
+       window.unlockContent = async function(mediaId, contentType, cost) {
             const user = auth.currentUser;
             if (!user) return;
 
@@ -814,19 +813,20 @@ window.sendMessage = async function() {
             if (!creatorCode) return;
 
             try {
-                // Check user credits
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 const userData = userDoc.data();
-                const currentCredits = userData.credits?.[creatorCode] || 0;
-
-                if (currentCredits < cost) {
-                    if (confirm(`You need ${cost} credits but only have ${currentCredits}. Buy more credits?`)) {
+                const currentCredits = userData.credits?.[creatorCode] || {};
+                
+                const tokenType = contentType === 'photo' ? 'roses' : contentType === 'video' ? 'hearts' : 'champagne';
+                const tokenAmount = currentCredits[tokenType] || 0;
+                
+                if (tokenAmount < cost) {
+                    if (confirm(`You need ${cost} ${tokenType} but only have ${tokenAmount}. Buy more credits?`)) {
                         window.location.href = 'velvet-purchase.html';
                     }
                     return;
                 }
 
-                // Fetch media from backend
                 const mediaResponse = await fetch(`https://velvet-backend-zeta.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}`);
                 const mediaData = await mediaResponse.json();
 
@@ -835,13 +835,15 @@ window.sendMessage = async function() {
                     return;
                 }
 
-                // Deduct credits
-                const newCredits = currentCredits - parseInt(cost);
+                const newCredits = {
+                    ...currentCredits,
+                    [tokenType]: tokenAmount - parseInt(cost)
+                };
+                
                 await setDoc(doc(db, 'users', user.uid), {
                     credits: { ...userData.credits, [creatorCode]: newCredits }
                 }, { merge: true });
 
-                // Record unlock
                 await addDoc(collection(db, 'unlocked_media'), {
                     userId: user.uid,
                     creatorCode: creatorCode,
@@ -850,13 +852,12 @@ window.sendMessage = async function() {
                     creditsCost: parseInt(cost)
                 });
 
-                // Show the content
                 const lockedEl = document.getElementById(`locked-${mediaId}`);
-                if (lockedEl && mediaData.media.downloadURL) {
+                if (lockedEl && mediaData.media.url) {
                     if (contentType === 'photo') {
-                        lockedEl.innerHTML = `<img src="${mediaData.media.downloadURL}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
+                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
                     } else {
-                        lockedEl.innerHTML = `<video src="${mediaData.media.downloadURL}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
+                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
                     }
                 }
 
