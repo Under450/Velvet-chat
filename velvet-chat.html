@@ -827,7 +827,7 @@ window.sendMessage = async function() {
                 }
 
                 // Fetch media from backend
-                const mediaResponse = await fetch(`https://velvet-backend-zeta.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}&type=${contentType}`);
+                const mediaResponse = await fetch(`https://velvet-backend-zeta.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}`);
                 const mediaData = await mediaResponse.json();
 
                 if (!mediaData.available) {
