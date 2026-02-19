@@ -854,6 +854,7 @@ window.sendMessage = async function() {
 
                 const lockedEl = document.getElementById(`locked-${mediaId}`);
                 if (lockedEl && mediaData.media.url) {
+                    lockedEl.onclick = null;
                     if (contentType === 'photo') {
                         lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
                     } else {
