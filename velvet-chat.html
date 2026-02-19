@@ -526,7 +526,7 @@
                 }
 
                 // Get the first creator code
-                const creatorCode = userData.creatorCodes[0];
+                const creatorCode = sessionStorage.getItem('currentCreatorCode');
 
                 // Fetch creator from backend API
                 const response = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
