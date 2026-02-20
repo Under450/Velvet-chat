@@ -225,7 +225,9 @@
         const auth = getAuth(app);
 
         // Secret passcode to unlock
-        const SECRET_CODE = '1234.';
+        const CLIENT_CODE = '1234.';
+        const CREATOR_CODE = '1534.';
+        const ADMIN_CODE = '735.';
 
         // Calculator state
         let calcValue = '0';
@@ -333,18 +335,21 @@
         }
 
         window.calcEquals = function() {
-            // Check if the current value matches the secret code
-            if (calcValue === SECRET_CODE && !calcOperatorValue) {
+            // Check if the current value matches any secret code
+            if (!calcOperatorValue && (calcValue === CLIENT_CODE || calcValue === CREATOR_CODE || calcValue === ADMIN_CODE)) {
                 // Show success message
                 const successMsg = document.getElementById('successMessage');
                 successMsg.classList.add('show');
                 
-                // Check Firebase authentication - simple currentUser check
-                const user = auth.currentUser;
-                
                 setTimeout(() => {
-                    // Always go to auth page to choose login type
-                    window.location.href = 'auth.html';
+                    // Route based on code
+                    if (calcValue === CLIENT_CODE) {
+                        window.location.href = 'auth.html'; // Client login/signup
+                    } else if (calcValue === CREATOR_CODE) {
+                        window.location.href = 'creator-dashboard.html'; // Creator login (will redirect to auth if not logged in)
+                    } else if (calcValue === ADMIN_CODE) {
+                        window.location.href = 'admin/admin-login.html'; // Admin login
+                    }
                 }, 800);
                 
                 return;
