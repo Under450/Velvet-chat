@@ -140,10 +140,46 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-whatsapp {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #25D366;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .btn-whatsapp:hover {
+            background: #1DA851;
+        }
+        
+        .btn-email {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #6B46C1;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .btn-email:hover {
+            background: #553C9A;
         }
         
         .btn-delete {
             flex: 1;
+            min-width: 100px;
             padding: 10px;
             border: none;
             border-radius: 8px;
@@ -375,6 +411,8 @@
                         <strong>${creator.code}</strong>
                     </div>
                     <div class="creator-actions">
+                        <button class="btn-whatsapp" onclick="sendWhatsApp('${creator.name}', '${creator.code}')">📱 WhatsApp</button>
+                        <button class="btn-email" onclick="sendEmail('${creator.name}', '${creator.code}', '${creator.email}')">📧 Email</button>
                         <button class="btn-delete" onclick="deleteCreator('${creator.id}', '${creator.name}')">Delete</button>
                     </div>
                 </div>
@@ -433,6 +471,106 @@
         }
         
         // Delete creator
+        // Send WhatsApp message
+        window.sendWhatsApp = function(creatorName, creatorCode) {
+            const message = `🎀 *Welcome to Velvet!* 🎀
+
+Hi ${creatorName}! 👋
+
+You've been set up as a Velvet creator. Here are your access details:
+
+━━━━━━━━━━━━━━━━
+📧 *Your Login Details*
+━━━━━━━━━━━━━━━━
+
+🔐 Creator Code: *${creatorCode}*
+📱 URL: under450.github.io/Velvet-chat
+
+💡 _Add to your home screen! It looks like a calculator, works like a calculator... until you unlock the magic ✨_
+
+*📱 iPhone:*
+1. Open link in Safari
+2. Tap Share → "Add to Home Screen"
+
+*🤖 Android:*
+1. Open link in Chrome
+2. Menu → "Add to Home screen"
+
+━━━━━━━━━━━━━━━━
+💼 *How to Get Started*
+━━━━━━━━━━━━━━━━
+
+1️⃣ Open the calculator
+2️⃣ Enter: *1534. =*
+3️⃣ Login with your email
+4️⃣ Upload your content
+
+━━━━━━━━━━━━━━━━
+👥 *Share with Clients*
+━━━━━━━━━━━━━━━━
+
+Give your clients:
+• Your code: *${creatorCode}*
+• The URL: under450.github.io/Velvet-chat
+
+They'll enter *1234. =* in the calculator, then your code to chat!
+
+Questions? Reply anytime! 💜`;
+
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Send Email
+        window.sendEmail = function(creatorName, creatorCode, creatorEmail) {
+            const subject = `Welcome to Velvet - Your Creator Account is Ready! 🎀`;
+            
+            const body = `Hi ${creatorName}!
+
+Congratulations! You've been set up as a Velvet creator. Here's everything you need to get started:
+
+🔐 YOUR LOGIN DETAILS
+━━━━━━━━━━━━━━━━
+Creator Code: ${creatorCode}
+Access URL: https://under450.github.io/Velvet-chat
+
+💡 Add to your home screen! It looks like a calculator, works like a calculator... until you unlock the magic ✨
+
+📱 iPhone:
+1. Open the link in Safari
+2. Tap the Share button
+3. Scroll down and tap "Add to Home Screen"
+4. Tap "Add"
+
+🤖 Android:
+1. Open the link in Chrome
+2. Tap the three dots menu
+3. Tap "Add to Home screen"
+4. Tap "Add"
+
+💼 HOW TO GET STARTED
+━━━━━━━━━━━━━━━━
+1. Open the calculator from your home screen
+2. Enter: 1534. =
+3. Login with your email and password
+4. Upload your photos, videos, and voice notes
+
+👥 SHARE WITH YOUR CLIENTS
+━━━━━━━━━━━━━━━━
+Give your clients:
+• Your code: ${creatorCode}
+• The URL: under450.github.io/Velvet-chat
+
+They'll enter 1234. = in the calculator, then use your code to chat with you!
+
+Questions? Just reply to this email and we'll help you get set up! 💜
+
+© 2026 Velvet. All rights reserved.`;
+
+            const mailtoUrl = `mailto:${creatorEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+
         window.deleteCreator = async function(creatorId, name) {
             if (!confirm(`Are you sure you want to delete ${name}?`)) {
                 return;

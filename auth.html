@@ -659,7 +659,8 @@
                     sessionStorage.setItem('currentCreatorCode', code);
                     window.location.href = 'velvet-chat.html';
                 } else {
-                    window.location.href = 'welcome.html';
+                    errorDiv.textContent = 'Please enter a creator code to continue';
+                    await signOut(auth);
                 }
             } catch (error) {
                 errorDiv.textContent = 'Invalid email or password';
