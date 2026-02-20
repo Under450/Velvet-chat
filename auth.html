@@ -357,13 +357,19 @@
             display: block;
         }
         
-        .creator-btn {
-            background: #6B46C1 !important;
-            margin-top: 10px;
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
         }
         
-        .creator-btn:hover {
-            background: #553C9A !important;
+        .forgot-password a {
+            color: #1e3a8a;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -426,9 +432,12 @@
     </div>
     
     <button class="auth-btn" onclick="handleLogin()">Login</button>
-    <button class="auth-btn creator-btn" onclick="handleCreatorLogin()">Creator Login</button>
     
     <div id="loginError" class="error"></div>
+
+    <div class="forgot-password">
+        <a href="#" onclick="handleForgotPassword(); return false;">Forgot Password?</a>
+    </div>
 </div>
 
 <!-- Signup Form -->
@@ -523,7 +532,7 @@
     
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         const firebaseConfig = {
@@ -732,36 +741,24 @@
             }
         }
 
-        window.handleCreatorLogin = async function() {
+        window.handleForgotPassword = async function() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
-            
-            if (!email || !password) {
-                errorDiv.textContent = 'Please enter email and password';
+
+            if (!email) {
+                errorDiv.textContent = 'Please enter your email first';
+                errorDiv.style.color = '#e74c3c';
                 return;
             }
-            
+
             try {
-                // Sign in first
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                
-                // Check if this email belongs to a creator
-                const creatorsQuery = query(collection(db, 'creators'), where('email', '==', email));
-                const creatorsSnapshot = await getDocs(creatorsQuery);
-                
-                if (creatorsSnapshot.empty) {
-                    errorDiv.textContent = 'Not authorized as creator';
-                    await signOut(auth);
-                    return;
-                }
-                
-                // Redirect to creator dashboard
-                window.location.href = 'creator-dashboard.html';
+                await sendPasswordResetEmail(auth, email);
+                errorDiv.textContent = 'Password reset email sent! Check your inbox.';
+                errorDiv.style.color = '#27ae60';
             } catch (error) {
-                errorDiv.textContent = 'Invalid email or password';
-                console.error('Creator login error:', error);
+                errorDiv.textContent = 'Error sending reset email. Please check your email address.';
+                errorDiv.style.color = '#e74c3c';
+                console.error('Password reset error:', error);
             }
         }
     </script>
