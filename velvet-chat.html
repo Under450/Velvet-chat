@@ -419,6 +419,50 @@
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-8px); }
         }
+        /* Fullscreen Image Viewer */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-modal.show {
+            display: flex;
+        }
+
+        .modal-content-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
     </style>
 </head>
 <body style="display: none;">
@@ -637,12 +681,12 @@
                         if (media.contentType === 'photo') {
                             messageHTML = messageHTML.replace(
                                 /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
-                                `<img src="${media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`
+                                `<img src="${media.url}" onclick="openImageModal('${media.url}')" style="width:100%;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo">`
                             );
                         } else {
                             messageHTML = messageHTML.replace(
                                 /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
-                                `<video src="${media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`
+                                `<video src="${media.url}" controls style="width:100%;border-radius:12px;display:block;"></video>`
                             );
                         }
                     }
@@ -813,17 +857,31 @@ window.sendMessage = async function() {
                 const cleanMessage = message.replace(/\[LOCKED_(PHOTO|VIDEO):\d+\]/g, '').trim();
                 const mediaId = Date.now();
 
-                creatorMsg.innerHTML = `
-                    <div class="message-bubble">
-                        ${cleanMessage}
-                        <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
-                            <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
-                            <div class="unlock-text">Unlock ${contentType === 'photo' ? 'Photo' : 'Video'}</div>
-                            <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
-                        </div>
-                    </div>`;
+                const messageHTML = `${cleanMessage}<div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})"><div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div><div class="unlock-text">Unlock ${contentType === 'photo' ? 'Photo' : 'Video'}</div><div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div></div>`;
+
+                creatorMsg.innerHTML = `<div class="message-bubble">${messageHTML}</div>`;
+                
+                // Save to Firestore
+                await addDoc(collection(db, 'messages'), {
+                    userId: user.uid,
+                    creatorCode: creatorCode,
+                    message: messageHTML,
+                    sender: 'creator',
+                    timestamp: new Date(),
+                    read: false
+                });
             } else {
                 creatorMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
+                
+                // Save to Firestore
+                await addDoc(collection(db, 'messages'), {
+                    userId: user.uid,
+                    creatorCode: creatorCode,
+                    message: message,
+                    sender: 'creator',
+                    timestamp: new Date(),
+                    read: false
+                });
             }
 
             chatContainer.appendChild(creatorMsg);
@@ -893,9 +951,9 @@ window.sendMessage = async function() {
                 if (lockedEl && mediaData.media.url) {
                     lockedEl.onclick = null;
                     if (contentType === 'photo') {
-                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
+                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" onclick="openImageModal('${mediaData.media.url}')" style="width:100%;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo">`;
                     } else {
-                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
+                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:100%;border-radius:12px;display:block;"></video>`;
                     }
                 }
 
@@ -911,6 +969,21 @@ window.sendMessage = async function() {
                 sendMessage();
             }
         });
+
+        // Fullscreen image modal
+        window.openImageModal = function(imageUrl) {
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('imageModal').classList.add('show');
+        }
+
+        window.closeImageModal = function() {
+            document.getElementById('imageModal').classList.remove('show');
+        }
     </script>
+    <!-- Fullscreen Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <span class="modal-close" onclick="closeImageModal()">×</span>
+        <img class="modal-content-img" id="modalImage">
+    </div>
 </body>
 </html>
