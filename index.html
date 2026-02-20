@@ -383,29 +383,6 @@
                     });
             });
         }
-// Hidden admin access - Secret code: 7-3-5-=.
-let secretCode = [];
-const ADMIN_CODE = ['7', '3', '5', '.','='];
-
-// Listen to all button clicks
-document.querySelectorAll('.calc-btn').forEach(button => {
-    button.addEventListener('click', function() {
-        const value = this.textContent;
-        
-        // Add to secret code array
-        secretCode.push(value);
-        
-        // Keep only last 5 presses
-        if (secretCode.length > 5) {
-            secretCode.shift();
-        }
-        
-        // Check if secret code matches
-if (JSON.stringify(secretCode) === JSON.stringify(ADMIN_CODE)) {
-    window.location.href = 'admin/admin-login.html';
-    secretCode = []; // Reset
-}
-    });
-});    </script>
+    </script>
 </body>
 </html>
