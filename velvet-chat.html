@@ -681,12 +681,12 @@
                         if (media.contentType === 'photo') {
                             messageHTML = messageHTML.replace(
                                 /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
-                                `<img src="${media.url}" onclick="openImageModal('${media.url}')" style="width:100%;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo">`
+                                `<div style="width:auto;height:auto;"><img src="${media.url}" onclick="openImageModal('${media.url}')" style="max-width:200px;max-height:200px;width:auto;height:auto;border-radius:12px;display:block;cursor:pointer;object-fit:contain;" alt="Unlocked photo"></div>`
                             );
                         } else {
                             messageHTML = messageHTML.replace(
                                 /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
-                                `<video src="${media.url}" controls style="width:100%;border-radius:12px;display:block;"></video>`
+                                `<div style="width:auto;height:auto;"><video src="${media.url}" controls style="max-width:200px;max-height:200px;width:auto;border-radius:12px;display:block;"></video></div>`
                             );
                         }
                     }
@@ -951,10 +951,14 @@ window.sendMessage = async function() {
                 if (lockedEl && mediaData.media.url) {
                     lockedEl.onclick = null;
                     if (contentType === 'photo') {
-                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" onclick="openImageModal('${mediaData.media.url}')" style="width:100%;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo">`;
+                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" onclick="openImageModal('${mediaData.media.url}')" style="max-width:200px;max-height:200px;width:auto;height:auto;border-radius:12px;display:block;cursor:pointer;object-fit:contain;" alt="Unlocked photo">`;
                     } else {
-                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:100%;border-radius:12px;display:block;"></video>`;
+                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="max-width:200px;max-height:200px;width:auto;border-radius:12px;display:block;"></video>`;
                     }
+                    lockedEl.style.width = 'auto';
+                    lockedEl.style.height = 'auto';
+                    lockedEl.style.background = 'transparent';
+                    lockedEl.style.border = 'none';
                 }
 
             } catch (error) {
