@@ -482,7 +482,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
         const firebaseConfig = {
             apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
@@ -561,67 +561,101 @@
         }
 
         // Load welcome messages
-        function loadWelcomeMessages() {
+        async function loadWelcomeMessages() {
             const chatContainer = document.getElementById('chatContainer');
-            chatContainer.innerHTML = `
-                <div class="message-time">Today ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
+            const user = auth.currentUser;
+            const creatorCode = sessionStorage.getItem('currentCreatorCode');
+
+            if (!user || !creatorCode) return;
+
+            try {
+                // Load messages from Firestore
+                const messagesSnapshot = await getDocs(
+                    query(
+                        collection(db, 'messages'),
+                        where('userId', '==', user.uid),
+                        where('creatorCode', '==', creatorCode)
+                    )
+                );
+
+                chatContainer.innerHTML = '';
+
+                if (messagesSnapshot.empty) {
+                    chatContainer.innerHTML = `
+                        <div class="message creator">
+                            <div class="message-bubble">
+                                Hey! 😊 Ready to chat?
+                            </div>
+                        </div>
+                    `;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return;
+                }
+
+                // Sort messages by timestamp
+                const messages = [];
+                messagesSnapshot.forEach(doc => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+                messages.sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis());
+
+                // Load unlocked media
+                const unlockedSnapshot = await getDocs(
+                    query(
+                        collection(db, 'unlocked_media'),
+                        where('userId', '==', user.uid),
+                        where('creatorCode', '==', creatorCode)
+                    )
+                );
                 
-                <div class="message creator">
-                    <div class="message-bubble">
-                        Hey! 😊
-                    </div>
-                </div>
+                const unlockedMedia = {};
+                unlockedSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.domId) {
+                        unlockedMedia[data.domId] = {
+                            url: data.mediaUrl,
+                            contentType: data.contentType
+                        };
+                    }
+                });
 
-                <div class="message creator">
-                    <div class="message-bubble">
-                        I've been thinking about you all day...
-                    </div>
-                </div>
+                // Display messages
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${msg.sender === 'user' ? 'user' : 'creator'}`;
+                    
+                    // Check if message contains locked content that's been unlocked
+                    let messageHTML = msg.message;
+                    
+                    // Look for locked content divs in the message
+                    const lockedMatch = messageHTML.match(/id="(locked-[^"]+)"/);
+                    if (lockedMatch && unlockedMedia[lockedMatch[1]]) {
+                        const domId = lockedMatch[1];
+                        const media = unlockedMedia[domId];
+                        
+                        // Replace locked div with unlocked media
+                        if (media.contentType === 'photo') {
+                            messageHTML = messageHTML.replace(
+                                /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
+                                `<img src="${media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`
+                            );
+                        } else {
+                            messageHTML = messageHTML.replace(
+                                /<div class="locked-content"[^>]*>[\s\S]*?<\/div>/,
+                                `<video src="${media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`
+                            );
+                        }
+                    }
+                    
+                    msgDiv.innerHTML = `<div class="message-bubble">${messageHTML}</div>`;
+                    chatContainer.appendChild(msgDiv);
+                });
 
-                <div class="message user">
-                    <div class="message-bubble">
-                        Hey beautiful! How are you?
-                    </div>
-                </div>
-
-                <div class="message creator">
-                    <div class="message-bubble">
-                        So much better now that you're here 💕
-                    </div>
-                </div>
-
-                <div class="message user">
-                    <div class="message-bubble">
-                        What are you up to?
-                    </div>
-                </div>
-
-                <div class="message creator">
-    <div class="message-bubble">
-        I've got something special for you... want to see? 😈
-        <div class="locked-content" id="locked-demo" onclick="unlockContent('demo', 'photo', 1)">
-            <div class="locked-icon">📸</div>
-            <div class="unlock-text">Unlock Photo</div>
-            <div class="unlock-cost">1 🌹 Rose</div>
-        </div>
-    </div>
-</div>
-
-                <div class="message user">
-                    <div class="message-bubble">
-                        You're such a tease 😅
-                    </div>
-                </div>
-
-                <div class="message creator">
-                    <div class="message-bubble">
-                        Maybe just a little... 😘
-                    </div>
-                </div>
-            `;
-
-            // Auto-scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                chatContainer.innerHTML = '<div class="loading">Say hi to get started! 👋</div>';
+            }
         }
 
        // Check auth and load creator on page load
@@ -785,7 +819,7 @@ window.sendMessage = async function() {
                         <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
                             <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
                             <div class="unlock-text">Unlock ${contentType === 'photo' ? 'Photo' : 'Video'}</div>
-                            <div class="unlock-cost">${cost} credits</div>
+                            <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
                         </div>
                     </div>`;
             } else {
@@ -848,6 +882,9 @@ window.sendMessage = async function() {
                     userId: user.uid,
                     creatorCode: creatorCode,
                     mediaId: mediaData.media.id,
+                    mediaUrl: mediaData.media.url,
+                    contentType: contentType,
+                    domId: `locked-${mediaId}`,
                     unlockedAt: new Date(),
                     creditsCost: parseInt(cost)
                 });
