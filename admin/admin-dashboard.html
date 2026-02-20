@@ -473,49 +473,45 @@
         // Delete creator
         // Send WhatsApp message
         window.sendWhatsApp = function(creatorName, creatorCode) {
-            const message = `🎀 *Welcome to Velvet!* 🎀
+            const message = `*Welcome to Velvet!*
 
-Hi ${creatorName}! 👋
+Hi ${creatorName},
 
-You've been set up as a Velvet creator. Here are your access details:
+You've been set up as a Velvet creator.
 
-━━━━━━━━━━━━━━━━
-📧 *Your Login Details*
-━━━━━━━━━━━━━━━━
+*YOUR LOGIN DETAILS*
 
-🔐 Creator Code: *${creatorCode}*
-📱 URL: under450.github.io/Velvet-chat
+Creator Code: *${creatorCode}*
+Website: under450.github.io/Velvet-chat
 
-💡 _Add to your home screen! It looks like a calculator, works like a calculator... until you unlock the magic ✨_
+*Add to Home Screen:*
+Makes it look like a calculator... until you unlock it.
 
-*📱 iPhone:*
+iPhone:
 1. Open link in Safari
-2. Tap Share → "Add to Home Screen"
+2. Tap Share button
+3. Select "Add to Home Screen"
 
-*🤖 Android:*
+Android:
 1. Open link in Chrome
-2. Menu → "Add to Home screen"
+2. Tap menu (3 dots)
+3. Select "Add to Home screen"
 
-━━━━━━━━━━━━━━━━
-💼 *How to Get Started*
-━━━━━━━━━━━━━━━━
+*HOW TO LOGIN*
 
-1️⃣ Open the calculator
-2️⃣ Enter: *1534. =*
-3️⃣ Login with your email
-4️⃣ Upload your content
+1. Open the calculator
+2. Type: *1534.* then press =
+3. Login with your email
+4. Start uploading content
 
-━━━━━━━━━━━━━━━━
-👥 *Share with Clients*
-━━━━━━━━━━━━━━━━
+*SHARE WITH CLIENTS*
 
-Give your clients:
-• Your code: *${creatorCode}*
-• The URL: under450.github.io/Velvet-chat
+Give clients your code: *${creatorCode}*
+And the website: under450.github.io/Velvet-chat
 
-They'll enter *1234. =* in the calculator, then your code to chat!
+They type *1234.* then = to login, then enter your code.
 
-Questions? Reply anytime! 💜`;
+Questions? Just reply to this message.`;
 
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
