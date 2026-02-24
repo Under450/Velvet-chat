@@ -113,4 +113,4 @@ module.exports = async (req, res) => {
     console.error('Creators API error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
-};
+};// Tue Feb 24 20:48:08 UTC 2026
