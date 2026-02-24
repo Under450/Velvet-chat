@@ -37,6 +37,6 @@ module.exports = async (req, res) => {
 
     } catch (e) {
         console.error('Stripe checkout error:', e);
-        return res.status(500).json({ error: e.message, type: e.type || 'unknown', stack: e.stack });
+        return res.status(500).json({ error: e.message, type: e.type || 'unknown' });
     }
 };
