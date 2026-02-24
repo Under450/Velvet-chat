@@ -6,6 +6,10 @@
     "api/stripe-webhook.js": {
       "maxDuration": 10,
       "memory": 1024
+    },
+    "api/stripe-checkout.js": {
+      "maxDuration": 10,
+      "memory": 1024
     }
   },
   "routes": [
