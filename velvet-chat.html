@@ -584,7 +584,7 @@
                 const creatorCode = sessionStorage.getItem('currentCreatorCode');
 
                 // Fetch creator from backend API
-                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                const response = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/creators');
                 const data = await response.json();
                 
                 currentCreator = data.creators.find(c => c.code === creatorCode);
@@ -896,7 +896,7 @@ window.sendMessage = async function() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
         
         // Call AI endpoint
-        const aiResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/ai-response', {
+        const aiResponse = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/ai-response', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -981,7 +981,7 @@ window.sendMessage = async function() {
                     return;
                 }
 
-                const mediaResponse = await fetch(`https://velvet-backend-zeta.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}`);
+                const mediaResponse = await fetch(`https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/media?creatorCode=${creatorCode}&userId=${user.uid}`);
                 const mediaData = await mediaResponse.json();
 
                 if (!mediaData.available) {

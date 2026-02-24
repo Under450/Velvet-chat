@@ -337,7 +337,7 @@
         // Load creators
         window.loadCreators = async function() {
             try {
-                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/admin');
+                const response = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/admin');
                 const data = await response.json();
                 
                 if (data.success) {
@@ -412,7 +412,7 @@
             }
             
             try {
-                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/admin', {
+                const response = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/admin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, age, location, bio, profilephoto })
@@ -439,7 +439,7 @@
             }
             
             try {
-                const response = await fetch('https://velvet-backend-zeta.vercel.app/api/admin', {
+                const response = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/admin', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ creatorId })

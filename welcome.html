@@ -150,7 +150,7 @@
             }
             
             try {
-                const creatorsResponse = await fetch('https://velvet-backend-zeta.vercel.app/api/creators');
+                const creatorsResponse = await fetch('https://velvet-chat-jjxw-cin0x3j6c-craigs-projects-ae9a1123.vercel.app/api/creators');
                 const creatorsData = await creatorsResponse.json();
                 const creatorExists = creatorsData.creators.some(c => c.code === code);
                 
