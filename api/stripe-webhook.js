@@ -33,6 +33,7 @@ const PACKAGE_CREDITS = {
   'sub_platinum': { chocolates: 999999, roses: 20, champagne: 10, hearts: 3 }
 };
 
+// CommonJS only - no ESM
 module.exports.config = {
   api: {
     bodyParser: false,
