@@ -1,7 +1,8 @@
 const admin = require('firebase-admin');
 
 // Initialize Firebase Admin
-const firebasePrivateKey = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+const firebasePrivateKey = rawKey.includes('\\n') ? rawKey.replace(/\\n/g, '\n') : rawKey;
 
 if (!admin.apps.length) {
   admin.initializeApp({
