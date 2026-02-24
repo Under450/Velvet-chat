@@ -8,10 +8,18 @@ module.exports = async (req, res) => {
 
     try {
         const key = process.env.STRIPE_SECRET_KEY;
-        if (!key) return res.status(500).json({ error: 'No stripe key' });
+        if (!key) return res.status(500).json({ error: 'No stripe key configured' });
 
-        const stripe = require('stripe')(key);
+        let stripe;
+        try {
+            stripe = require('stripe')(key);
+        } catch (e) {
+            return res.status(500).json({ error: 'Stripe init failed: ' + e.message });
+        }
+
         const { packageId, amountPence, packageName, userId, creatorCode } = req.body;
+
+        if (!amountPence) return res.status(400).json({ error: 'amountPence is required' });
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -19,7 +27,7 @@ module.exports = async (req, res) => {
                 price_data: {
                     currency: 'gbp',
                     product_data: { name: packageName || 'Velvet Credits' },
-                    unit_amount: parseInt(amountPence) || 499,
+                    unit_amount: parseInt(amountPence),
                 },
                 quantity: 1,
             }],
@@ -32,6 +40,7 @@ module.exports = async (req, res) => {
         return res.status(200).json({ url: session.url });
 
     } catch (e) {
-        return res.status(500).json({ error: e.message });
+        console.error('Stripe checkout error:', e);
+        return res.status(500).json({ error: e.message, type: e.type || 'unknown' });
     }
 };
