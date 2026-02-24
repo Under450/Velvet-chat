@@ -560,70 +560,56 @@
             }
         }
 
-        // Load welcome messages
-        function loadWelcomeMessages() {
+        // Load messages from Firestore
+        async function loadWelcomeMessages() {
             const chatContainer = document.getElementById('chatContainer');
-            chatContainer.innerHTML = `
-                <div class="message-time">Today ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
-                
-                <div class="message creator">
-                    <div class="message-bubble">
-                        Hey! 😊
-                    </div>
-                </div>
+            const user = auth.currentUser;
+            const creatorCode = sessionStorage.getItem('currentCreatorCode');
 
-                <div class="message creator">
-                    <div class="message-bubble">
-                        I've been thinking about you all day...
-                    </div>
-                </div>
+            if (!user || !creatorCode) return;
 
-                <div class="message user">
-                    <div class="message-bubble">
-                        Hey beautiful! How are you?
-                    </div>
-                </div>
+            try {
+                const messagesSnapshot = await getDocs(
+                    query(
+                        collection(db, 'messages'),
+                        where('userId', '==', user.uid),
+                        where('creatorCode', '==', creatorCode)
+                    )
+                );
 
-                <div class="message creator">
-                    <div class="message-bubble">
-                        So much better now that you're here 💕
-                    </div>
-                </div>
+                chatContainer.innerHTML = '';
 
-                <div class="message user">
-                    <div class="message-bubble">
-                        What are you up to?
-                    </div>
-                </div>
+                if (messagesSnapshot.empty) {
+                    chatContainer.innerHTML = `
+                        <div class="message creator">
+                            <div class="message-bubble">
+                                Hey! 😊 Ready to chat?
+                            </div>
+                        </div>
+                    `;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    return;
+                }
 
-                <div class="message creator">
-    <div class="message-bubble">
-        I've got something special for you... want to see? 😈
-        <div class="locked-content" id="locked-demo" onclick="unlockContent('demo', 'photo', 1)">
-            <div class="locked-icon">📸</div>
-            <div class="unlock-text">Unlock Photo</div>
-            <div class="unlock-cost">1 🌹 Rose</div>
-        </div>
-    </div>
-</div>
+                const messages = [];
+                messagesSnapshot.forEach(doc => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+                messages.sort((a, b) => a.timestamp?.toMillis() - b.timestamp?.toMillis());
 
-                <div class="message user">
-                    <div class="message-bubble">
-                        You're such a tease 😅
-                    </div>
-                </div>
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${msg.sender === 'user' ? 'user' : 'creator'}`;
+                    msgDiv.innerHTML = `<div class="message-bubble">${msg.message}</div>`;
+                    chatContainer.appendChild(msgDiv);
+                });
 
-                <div class="message creator">
-                    <div class="message-bubble">
-                        Maybe just a little... 😘
-                    </div>
-                </div>
-            `;
-
-            // Auto-scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                chatContainer.innerHTML = '<div class="loading">Say hi to get started! 👋</div>';
+            }
         }
-
        // Check auth and load creator on page load
         onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -784,7 +770,7 @@ window.sendMessage = async function() {
                         ${cleanMessage}
                         <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
                             <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
-                            <div class="unlock-text">Unlock ${contentType === 'photo' ? 'Photo' : 'Video'}</div>
+                            <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
                             <div class="unlock-cost">${cost} credits</div>
                         </div>
                     </div>`;
