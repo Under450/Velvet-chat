@@ -10,12 +10,8 @@ module.exports = async (req, res) => {
         const key = process.env.STRIPE_SECRET_KEY;
         if (!key) return res.status(500).json({ error: 'No stripe key configured' });
 
-        let stripe;
-        try {
-            stripe = require('stripe')(key);
-        } catch (e) {
-            return res.status(500).json({ error: 'Stripe init failed: ' + e.message });
-        }
+        const Stripe = require('stripe');
+        const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
 
         const { packageId, amountPence, packageName, userId, creatorCode } = req.body;
 
@@ -41,6 +37,6 @@ module.exports = async (req, res) => {
 
     } catch (e) {
         console.error('Stripe checkout error:', e);
-        return res.status(500).json({ error: e.message, type: e.type || 'unknown' });
+        return res.status(500).json({ error: e.message, type: e.type || 'unknown', stack: e.stack });
     }
 };
