@@ -33,7 +33,7 @@ const PACKAGE_CREDITS = {
   'sub_platinum': { chocolates: 999999, roses: 20, champagne: 10, hearts: 3 }
 };
 
-export const config = {
+module.exports.config = {
   api: {
     bodyParser: false,
   },
