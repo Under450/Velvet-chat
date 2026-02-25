@@ -833,7 +833,7 @@
                             </div>
                         </div>`;
                         const creatorCodePrev = sessionStorage.getItem('currentCreatorCode');
-                        fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePrev}&type=${contentType === 'photo' ? 'photo' : 'video'}`)
+                        fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePrev}`)
                             .then(r => r.json()).then(d => {
                                 if (d.available && d.media.url) {
                                     const img = document.getElementById(`preview-${mediaId}`);
@@ -1046,7 +1046,7 @@ window.sendMessage = async function() {
                     </div>`;
                 // Fetch real preview image
                 const creatorCodePreview = sessionStorage.getItem('currentCreatorCode');
-                fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePreview}&type=${contentType === 'photo' ? 'photo' : 'video'}`)
+                fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePreview}`)
                     .then(r => r.json()).then(d => {
                         if (d.available && d.media.url) {
                             const img = document.getElementById(`preview-${mediaId}`);
