@@ -395,36 +395,33 @@
             }
             
             const siteUrl = 'https://under450.github.io/Velvet-chat/';
+            let html = '';
 
-            container.innerHTML = creators.map(creator => {
-                const loginDetails = `Hi ${creator.name}! 💗 Your Velvet creator account is ready.\n\nLogin: ${siteUrl}creator-login.html\nEmail: ${creator.email}\nAccess Code: ${creator.code}\n\nType your code into the calculator to login.`;
+            creators.forEach(function(creator) {
+                const loginDetails = 'Hi ' + creator.name + '! Your Velvet creator account is ready.\n\nLogin: ' + siteUrl + 'creator-login.html\nEmail: ' + (creator.email || '') + '\nAccess Code: ' + creator.code + '\n\nType your code into the calculator to login.';
                 const waMsg = encodeURIComponent(loginDetails);
                 const mailSubject = encodeURIComponent('Your Velvet Creator Account');
                 const mailBody = encodeURIComponent(loginDetails);
+                const email = creator.email || '';
 
-                return \`
-                <div class="creator-card">
-                    <div class="creator-header">
-                        <div class="creator-avatar">\${creator.name.charAt(0)}</div>
-                        <div class="creator-info">
-                            <h3>\${creator.name}</h3>
-                            <p>\${creator.age} • \${creator.location || 'Location not set'}</p>
-                        </div>
-                    </div>
-                    <p style="color: #666; font-size: 14px; margin: 10px 0;">\${creator.bio || 'No bio'}</p>
-                    <div class="creator-email-display">📧 \${creator.email || 'No email set'}</div>
-                    <div class="creator-code">
-                        <small>Creator Access Code</small>
-                        <strong>\${creator.code}</strong>
-                    </div>
-                    <div class="creator-actions">
-                        <a class="btn-whatsapp" href="https://wa.me/?text=\${waMsg}" target="_blank">📱 WhatsApp</a>
-                        <a class="btn-email" href="mailto:\${creator.email}?subject=\${mailSubject}&body=\${mailBody}">✉️ Email</a>
-                        <button class="btn-delete" onclick="deleteCreator('\${creator.id}', '\${creator.name}')">Delete</button>
-                    </div>
-                </div>
-                \`;
-            }).join('');
+                html += '<div class="creator-card">';
+                html += '<div class="creator-header">';
+                html += '<div class="creator-avatar">' + creator.name.charAt(0) + '</div>';
+                html += '<div class="creator-info">';
+                html += '<h3>' + creator.name + '</h3>';
+                html += '<p>' + creator.age + ' &bull; ' + (creator.location || 'Location not set') + '</p>';
+                html += '</div></div>';
+                html += '<p style="color:#666;font-size:14px;margin:10px 0;">' + (creator.bio || 'No bio') + '</p>';
+                html += '<div class="creator-email-display">📧 ' + (email || 'No email set') + '</div>';
+                html += '<div class="creator-code"><small>Creator Access Code</small><strong>' + creator.code + '</strong></div>';
+                html += '<div class="creator-actions">';
+                html += '<a class="btn-whatsapp" href="https://wa.me/?text=' + waMsg + '" target="_blank">📱 WhatsApp</a>';
+                html += '<a class="btn-email" href="mailto:' + email + '?subject=' + mailSubject + '&body=' + mailBody + '">✉️ Email</a>';
+                html += '<button class="btn-delete" onclick="deleteCreator(\'' + creator.id + '\', \'' + creator.name + '\')">Delete</button>';
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
         }
         
         // Show modal
