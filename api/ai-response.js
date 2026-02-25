@@ -146,6 +146,7 @@ if (!openrouterResponse.ok) {
 }
 
 const aiResponse = openrouterData.choices[0].message.content;
+    console.log('AI RAW RESPONSE:', aiResponse);
 
     // Save AI response to Firebase
     await admin.firestore().collection('messages').add({
