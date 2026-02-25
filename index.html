@@ -333,21 +333,29 @@
         }
 
         window.calcEquals = function() {
-            // Check if the current value matches the secret code
-            if (calcValue === SECRET_CODE && !calcOperatorValue) {
-                // Show success message
-                const successMsg = document.getElementById('successMessage');
-                successMsg.classList.add('show');
-                
-                // Check Firebase authentication - simple currentUser check
-                const user = auth.currentUser;
-                
-                setTimeout(() => {
-                    // Always go to auth page to choose login type
-                    window.location.href = 'auth.html';
-                }, 800);
-                
-                return;
+            // Check secret codes via calcValue
+            if (!calcOperatorValue) {
+                if (calcValue === '1234.') {
+                    const user = auth.currentUser;
+                    window.location.href = user ? 'welcome.html' : 'auth.html';
+                    return;
+                }
+                if (calcValue === '1534.') {
+                    window.location.href = 'creator-login.html';
+                    return;
+                }
+                if (calcValue === '8889.') {
+                    window.location.href = 'teaser.html';
+                    return;
+                }
+                if (calcValue === '735.') {
+                    window.location.href = 'admin/admin-login.html';
+                    return;
+                }
+                if (calcValue === '78321.') {
+                    window.location.href = 'sitemap.html';
+                    return;
+                }
             }
 
             // Normal calculator operation
