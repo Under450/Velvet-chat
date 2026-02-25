@@ -268,7 +268,7 @@
             width: 200px;
             display: block;
             border-radius: 12px;
-            filter: blur(4px);
+            filter: blur(2px);
             transform: scale(1.05);
         }
 
@@ -825,13 +825,21 @@
                         msgDiv.innerHTML = `<div class="message-bubble">
                             ${cleanMessage ? cleanMessage + '<br>' : ''}
                             <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
-                                <img class="locked-bg-img" src="https://picsum.photos/200/150?blur=10&random=${mediaId}" alt="">
+                                <img class="locked-bg-img" id="preview-${mediaId}" src="" alt="">
                                 <div class="locked-overlay">
                                     <div class="locked-icon">🔒</div>
                                     <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'} to unlock</div>
                                 </div>
                             </div>
                         </div>`;
+                        const creatorCodePrev = sessionStorage.getItem('currentCreatorCode');
+                        fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePrev}&type=${contentType === 'photo' ? 'photo' : 'video'}`)
+                            .then(r => r.json()).then(d => {
+                                if (d.available && d.media.url) {
+                                    const img = document.getElementById(`preview-${mediaId}`);
+                                    if (img) img.src = d.media.url;
+                                }
+                            }).catch(() => {});
                     } else {
                         msgDiv.innerHTML = `<div class="message-bubble">${msg.message}</div>`;
                     }
@@ -1001,15 +1009,24 @@ window.sendMessage = async function() {
 
                 creatorMsg.innerHTML = `
                     <div class="message-bubble">
-                        ${cleanMessage}
+                        ${cleanMessage ? cleanMessage + '<br>' : ''}
                         <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
-                            <img class="locked-bg-img" src="https://picsum.photos/200/150?blur=10&random=${mediaId}" alt="">
+                            <img class="locked-bg-img" id="preview-${mediaId}" src="" alt="">
                             <div class="locked-overlay">
                                 <div class="locked-icon">🔒</div>
                                 <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'} to unlock</div>
                             </div>
                         </div>
                     </div>`;
+                // Fetch real preview image
+                const creatorCodePreview = sessionStorage.getItem('currentCreatorCode');
+                fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePreview}&type=${contentType === 'photo' ? 'photo' : 'video'}`)
+                    .then(r => r.json()).then(d => {
+                        if (d.available && d.media.url) {
+                            const img = document.getElementById(`preview-${mediaId}`);
+                            if (img) img.src = d.media.url;
+                        }
+                    }).catch(() => {});
             } else {
                 creatorMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
             }
