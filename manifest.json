@@ -1,12 +1,12 @@
 {
-  "name": "Velvet",
-  "short_name": "Velvet",
-  "description": "Premium private creator platform",
+  "name": "Calculator",
+  "short_name": "Calculator",
+  "description": "Calculator",
   "start_url": "/Velvet-chat/index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#ff9500",
   "icons": [
     {
       "src": "icon-192.png",
