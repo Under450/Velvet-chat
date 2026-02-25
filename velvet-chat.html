@@ -798,7 +798,25 @@
                 messages.forEach(msg => {
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `message ${msg.sender === 'user' ? 'user' : 'creator'}`;
-                    msgDiv.innerHTML = `<div class="message-bubble">${msg.message}</div>`;
+                    
+                    const photoMatch = msg.message && msg.message.match(/\[LOCKED_PHOTO:(\d+)\]/);
+                    const videoMatch = msg.message && msg.message.match(/\[LOCKED_VIDEO:(\d+)\]/);
+                    
+                    if ((photoMatch || videoMatch) && msg.sender !== 'user') {
+                        const cost = photoMatch ? photoMatch[1] : videoMatch[1];
+                        const contentType = photoMatch ? 'photo' : 'video';
+                        const cleanMessage = msg.message.replace(/\[LOCKED_(PHOTO|VIDEO):\d+\]/g, '').trim();
+                        const mediaId = msg.id || Date.now();
+                        msgDiv.innerHTML = `<div class="message-bubble">
+                            ${cleanMessage ? cleanMessage + '<br>' : ''}
+                            <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
+                                <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
+                                <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
+                            </div>
+                        </div>`;
+                    } else {
+                        msgDiv.innerHTML = `<div class="message-bubble">${msg.message}</div>`;
+                    }
                     chatContainer.appendChild(msgDiv);
                 });
 
