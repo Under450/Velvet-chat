@@ -378,28 +378,42 @@
                     });
             });
         }
-// Hidden admin access - Secret code: 7-3-5-=.
+// Secret codes via button sequence tracking
 let secretCode = [];
-const ADMIN_CODE = ['7', '3', '5', '.','='];
 
-// Listen to all button clicks
 document.querySelectorAll('.calc-btn').forEach(button => {
     button.addEventListener('click', function() {
-        const value = this.textContent;
-        
-        // Add to secret code array
+        const value = this.textContent.trim();
         secretCode.push(value);
-        
-        // Keep only last 5 presses
-        if (secretCode.length > 5) {
-            secretCode.shift();
+        if (secretCode.length > 7) secretCode.shift();
+        const seq = secretCode.join('');
+
+        // 1234. = client login
+        if (seq.endsWith('1234.=') || seq.endsWith('1234.')) {
+            secretCode = [];
+            const user = auth.currentUser;
+            window.location.href = user ? 'welcome.html' : 'auth.html';
         }
-        
-        // Check if secret code matches
-if (JSON.stringify(secretCode) === JSON.stringify(ADMIN_CODE)) {
-    window.location.href = 'admin/admin-login.html';
-    secretCode = []; // Reset
-}
+        // 1534. = creator login
+        else if (seq.endsWith('1534.=') || seq.endsWith('1534.')) {
+            secretCode = [];
+            window.location.href = 'creator-login.html';
+        }
+        // 8889. = teaser page
+        else if (seq.endsWith('8889.=') || seq.endsWith('8889.')) {
+            secretCode = [];
+            window.location.href = 'teaser.html';
+        }
+        // 735. = admin login
+        else if (seq.endsWith('735.=') || seq.endsWith('735.')) {
+            secretCode = [];
+            window.location.href = 'admin/admin-login.html';
+        }
+        // 78321. = sitemap
+        else if (seq.endsWith('78321.=') || seq.endsWith('78321.')) {
+            secretCode = [];
+            window.location.href = 'sitemap.html';
+        }
     });
 });    </script>
 </body>
