@@ -268,7 +268,7 @@
             width: 200px;
             display: block;
             border-radius: 12px;
-            filter: blur(0.5px);
+            filter: blur(3px);
             transform: scale(1.05);
         }
 
@@ -824,7 +824,7 @@
                         const mediaId = msg.id || Date.now();
                         msgDiv.innerHTML = `<div class="message-bubble">
                             ${cleanMessage ? cleanMessage + '<br>' : ''}
-                            <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
+                            <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})" data-url="">
                                 <img class="locked-bg-img" id="preview-${mediaId}" src="" alt="">
                                 <div class="locked-overlay">
                                     <div class="locked-icon">🔒</div>
@@ -838,6 +838,8 @@
                                 if (d.available && d.media.url) {
                                     const img = document.getElementById(`preview-${mediaId}`);
                                     if (img) img.src = d.media.url;
+                                    const box = document.getElementById(`locked-${mediaId}`);
+                                    if (box) box.dataset.url = d.media.url;
                                 }
                             }).catch(() => {});
                     } else {
@@ -1036,7 +1038,7 @@ window.sendMessage = async function() {
                 creatorMsg.innerHTML = `
                     <div class="message-bubble">
                         ${cleanMessage ? cleanMessage + '<br>' : ''}
-                        <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
+                        <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})" data-url="">
                             <img class="locked-bg-img" id="preview-${mediaId}" src="" alt="">
                             <div class="locked-overlay">
                                 <div class="locked-icon">🔒</div>
@@ -1044,13 +1046,15 @@ window.sendMessage = async function() {
                             </div>
                         </div>
                     </div>`;
-                // Fetch real preview image
+                // Fetch real preview image and store URL
                 const creatorCodePreview = sessionStorage.getItem('currentCreatorCode');
                 fetch(`https://velvet-chat-jjxw.vercel.app/api/media?creatorCode=${creatorCodePreview}`)
                     .then(r => r.json()).then(d => {
                         if (d.available && d.media.url) {
                             const img = document.getElementById(`preview-${mediaId}`);
                             if (img) img.src = d.media.url;
+                            const box = document.getElementById(`locked-${mediaId}`);
+                            if (box) box.dataset.url = d.media.url;
                         }
                     }).catch(() => {});
             } else {
@@ -1118,12 +1122,14 @@ window.sendMessage = async function() {
                 });
 
                 const lockedEl = document.getElementById(`locked-${mediaId}`);
-                if (lockedEl && mediaData.media.url) {
+                if (lockedEl) {
+                    // Use the stored preview URL (same image user was teased with)
+                    const revealUrl = lockedEl.dataset.url || mediaData.media.url;
                     lockedEl.onclick = null;
                     if (contentType === 'photo') {
-                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo" onclick="openImageModal('${mediaData.media.url}')">`;
+                        lockedEl.innerHTML = `<img src="${revealUrl}" style="width:200px;height:100%;object-fit:cover;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo" onclick="openImageModal('${revealUrl}')">`;
                     } else {
-                        lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
+                        lockedEl.innerHTML = `<video src="${revealUrl}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
                     }
                 }
 
@@ -1132,6 +1138,15 @@ window.sendMessage = async function() {
                 alert('Error unlocking content: ' + error.message);
             }
         }
+
+        // Full screen image modal
+        window.openImageModal = function(url) {
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+            modal.innerHTML = `<img src="${url}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;">`;
+            modal.onclick = function() { document.body.removeChild(modal); };
+            document.body.appendChild(modal);
+        };
 
         // Enter to send
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
