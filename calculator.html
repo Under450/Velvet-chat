@@ -176,6 +176,7 @@
         window.calculate = function() {
             passcodeAttempt += '=';
             passcodeDigits = '';
+            console.log('PASSCODE ATTEMPT:', passcodeAttempt);
 
             // Check secret codes - match end of passcodeAttempt
             if (passcodeAttempt.includes('1234.') || passcodeAttempt.includes('1234=')) {
