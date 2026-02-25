@@ -89,29 +89,29 @@
     <div class="calculator">
         <div class="display" id="display">0</div>
         <div class="buttons">
-            <button class="btn function" onclick="clearDisplay()">C</button>
-            <button class="btn function" onclick="toggleSign()">+/-</button>
-            <button class="btn function" onclick="percentage()">%</button>
-            <button class="btn operator" onclick="setOperator('/')">÷</button>
+            <button class="btn function" id="btnC">C</button>
+            <button class="btn function" id="btnSign">+/-</button>
+            <button class="btn function" id="btnPct">%</button>
+            <button class="btn operator" id="btnDiv">÷</button>
             
-            <button class="btn" onclick="appendNumber('7')">7</button>
-            <button class="btn" onclick="appendNumber('8')">8</button>
-            <button class="btn" onclick="appendNumber('9')">9</button>
-            <button class="btn operator" onclick="setOperator('*')">×</button>
+            <button class="btn" id="btn7">7</button>
+            <button class="btn" id="btn8">8</button>
+            <button class="btn" id="btn9">9</button>
+            <button class="btn operator" id="btnMul">×</button>
             
-            <button class="btn" onclick="appendNumber('4')">4</button>
-            <button class="btn" onclick="appendNumber('5')">5</button>
-            <button class="btn" onclick="appendNumber('6')">6</button>
-            <button class="btn operator" onclick="setOperator('-')">−</button>
+            <button class="btn" id="btn4">4</button>
+            <button class="btn" id="btn5">5</button>
+            <button class="btn" id="btn6">6</button>
+            <button class="btn operator" id="btnSub">−</button>
             
-            <button class="btn" onclick="appendNumber('1')">1</button>
-            <button class="btn" onclick="appendNumber('2')">2</button>
-            <button class="btn" onclick="appendNumber('3')">3</button>
-            <button class="btn operator" onclick="setOperator('+')">+</button>
+            <button class="btn" id="btn1">1</button>
+            <button class="btn" id="btn2">2</button>
+            <button class="btn" id="btn3">3</button>
+            <button class="btn operator" id="btnAdd">+</button>
             
-            <button class="btn zero" onclick="appendNumber('0')">0</button>
-            <button class="btn" onclick="appendNumber('.')">.</button>
-            <button class="btn operator" onclick="calculate()">=</button>
+            <button class="btn zero" id="btn0">0</button>
+            <button class="btn" id="btnDot">.</button>
+            <button class="btn operator" id="btnEq">=</button>
         </div>
     </div>
 
@@ -138,7 +138,7 @@
         let passcodeDigits = '';
         let isNewNumber = true;
 
-        window.clearDisplay = function() {
+        function clearDisplay() {
             currentValue = '0';
             previousValue = null;
             operator = null;
@@ -148,7 +148,7 @@
             updateDisplay();
         }
 
-        window.appendNumber = function(num) {
+        function appendNumber(num) {
             passcodeDigits += num;
             passcodeAttempt += num;
             
@@ -161,7 +161,7 @@
             updateDisplay();
         }
 
-        window.setOperator = function(op) {
+        function setOperator(op) {
             passcodeAttempt += op;
             
             if (previousValue === null) {
@@ -173,7 +173,7 @@
             isNewNumber = true;
         }
 
-        window.calculate = function() {
+        function calculate() {
             passcodeAttempt += '=';
             passcodeDigits = '';
             console.log('PASSCODE ATTEMPT:', passcodeAttempt);
@@ -241,12 +241,12 @@
             updateDisplay();
         }
 
-        window.toggleSign = function() {
+        function toggleSign() {
             currentValue = (parseFloat(currentValue) * -1).toString();
             updateDisplay();
         }
 
-        window.percentage = function() {
+        function percentage() {
             currentValue = (parseFloat(currentValue) / 100).toString();
             updateDisplay();
         }
@@ -254,6 +254,27 @@
         function updateDisplay() {
             display.textContent = currentValue;
         }
+
+        // Attach events after DOM ready (avoids onclick+module scope issues)
+        document.getElementById('btnC').addEventListener('click', clearDisplay);
+        document.getElementById('btnSign').addEventListener('click', toggleSign);
+        document.getElementById('btnPct').addEventListener('click', percentage);
+        document.getElementById('btnDiv').addEventListener('click', () => setOperator('/'));
+        document.getElementById('btn7').addEventListener('click', () => appendNumber('7'));
+        document.getElementById('btn8').addEventListener('click', () => appendNumber('8'));
+        document.getElementById('btn9').addEventListener('click', () => appendNumber('9'));
+        document.getElementById('btnMul').addEventListener('click', () => setOperator('*'));
+        document.getElementById('btn4').addEventListener('click', () => appendNumber('4'));
+        document.getElementById('btn5').addEventListener('click', () => appendNumber('5'));
+        document.getElementById('btn6').addEventListener('click', () => appendNumber('6'));
+        document.getElementById('btnSub').addEventListener('click', () => setOperator('-'));
+        document.getElementById('btn1').addEventListener('click', () => appendNumber('1'));
+        document.getElementById('btn2').addEventListener('click', () => appendNumber('2'));
+        document.getElementById('btn3').addEventListener('click', () => appendNumber('3'));
+        document.getElementById('btnAdd').addEventListener('click', () => setOperator('+'));
+        document.getElementById('btn0').addEventListener('click', () => appendNumber('0'));
+        document.getElementById('btnDot').addEventListener('click', () => appendNumber('.'));
+        document.getElementById('btnEq').addEventListener('click', calculate);
     </script>
 </body>
 </html>
