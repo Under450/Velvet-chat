@@ -124,6 +124,7 @@
         let previousValue = null;
         let operator = null;
         let passcodeAttempt = '';
+        let passcodeDigits = '';
         let isNewNumber = true;
 
         window.clearDisplay = function() {
@@ -131,11 +132,13 @@
             previousValue = null;
             operator = null;
             passcodeAttempt = '';
+            passcodeDigits = '';
             isNewNumber = true;
             updateDisplay();
         }
 
         window.appendNumber = function(num) {
+            passcodeDigits += num;
             passcodeAttempt += num;
             
             if (isNewNumber) {
@@ -161,9 +164,11 @@
 
         window.calculate = function() {
             passcodeAttempt += '=';
+            const digits = passcodeDigits;
+            passcodeDigits = '';
             
-            // Check for passcode 1234+= (client login)
-            if (passcodeAttempt === '1234+=') {
+            // Check secret codes by digits only
+            if (digits === '1234') {
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         window.location.href = 'welcome.html';
@@ -171,23 +176,18 @@
                         window.location.href = 'auth.html';
                     }
                 });
+                passcodeAttempt = '';
                 return;
             }
-            
-            // 1534+= creator login
-            if (passcodeAttempt === '1534+=') {
+            if (digits === '1534') {
                 window.location.href = 'creators.html';
                 return;
             }
-            
-            // 8889+= browse creators teaser
-            if (passcodeAttempt === '8889+=') {
+            if (digits === '8889') {
                 window.location.href = 'browse-creators.html';
                 return;
             }
-            
-            // 735+= admin login
-            if (passcodeAttempt === '735+=') {
+            if (digits === '735') {
                 window.location.href = 'admin/admin-dashboard.html';
                 return;
             }
