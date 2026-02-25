@@ -251,6 +251,33 @@
                 <div class="loading">Loading your content...</div>
             </div>
         </div>
+
+        <!-- Availability Section -->
+        <div class="upload-section">
+            <h2>📅 My Availability</h2>
+            <p style="color:#666;font-size:14px;margin-bottom:16px;">Set which times you're available for video calls. Clients will only see these slots when booking.</p>
+            <div id="availGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px;text-align:center;font-size:12px;">
+                <div style="font-weight:600;color:#999;">Mon</div>
+                <div style="font-weight:600;color:#999;">Tue</div>
+                <div style="font-weight:600;color:#999;">Wed</div>
+                <div style="font-weight:600;color:#999;">Thu</div>
+                <div style="font-weight:600;color:#999;">Fri</div>
+                <div style="font-weight:600;color:#999;">Sat</div>
+                <div style="font-weight:600;color:#999;">Sun</div>
+            </div>
+            <div id="timeSlotPicker" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+            <button class="upload-btn" id="saveAvailBtn" onclick="saveAvailability()">Save Availability</button>
+            <div id="availMsg" style="margin-top:10px;font-size:14px;color:#27ae60;display:none;">✓ Availability saved</div>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="upload-section">
+            <h2>📹 Upcoming Video Calls</h2>
+            <div id="bookingsContainer">
+                <div class="loading">Loading bookings...</div>
+            </div>
+        </div>
+
     </div>
     
     <script type="module">
@@ -300,6 +327,8 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             document.getElementById('creatorName').textContent = `${currentCreator.name} • Code: ${currentCreator.code}`;
             loadMedia();
             loadPotdList();
+                loadAvailability(currentCreator.code);
+                loadBookings(currentCreator.code);
             // Set today as default date
             document.getElementById('potdDate').value = new Date().toISOString().split('T')[0];
         });
@@ -503,6 +532,149 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             if (!confirm('Delete this Picture of the Day?')) return;
             await deleteDoc(doc(db, 'picture_of_day', id));
             loadPotdList();
+        }
+
+
+        // ── AVAILABILITY ─────────────────────────────────────────────────────
+        const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        const HOURS = [8,9,10,11,12,13,14,15,16,17,18,19,20,21];
+        // selectedSlots: Set of "dayIndex_hour_minute" strings e.g. "0_14_0"
+        let selectedSlots = new Set();
+
+        function buildTimePicker(existingSlots) {
+            selectedSlots = new Set(existingSlots || []);
+            const container = document.getElementById('timeSlotPicker');
+            let html = '';
+
+            HOURS.forEach(hour => {
+                const label = (hour < 12 ? hour : hour === 12 ? 12 : hour-12) + ':00 ' + (hour < 12 ? 'AM' : 'PM');
+                html += '<div style="display:grid;grid-template-columns:60px repeat(7,1fr);gap:6px;align-items:center;">';
+                html += '<div style="font-size:12px;color:#999;">' + label + '</div>';
+                DAYS.forEach((day, dayIdx) => {
+                    const key = dayIdx + '_' + hour + '_0';
+                    const selected = selectedSlots.has(key);
+                    html += '<div onclick="toggleSlot(this,'' + key + '')" style="height:32px;border-radius:6px;cursor:pointer;background:' + (selected ? '#1e3a8a' : '#f0f0f0') + ';border:2px solid ' + (selected ? '#1e3a8a' : 'transparent') + ';" data-key="' + key + '"></div>';
+                });
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.toggleSlot = function(el, key) {
+            if (selectedSlots.has(key)) {
+                selectedSlots.delete(key);
+                el.style.background = '#f0f0f0';
+                el.style.borderColor = 'transparent';
+            } else {
+                selectedSlots.add(key);
+                el.style.background = '#1e3a8a';
+                el.style.borderColor = '#1e3a8a';
+            }
+        };
+
+        async function loadAvailability(creatorCode) {
+            try {
+                const res = await fetch('https://velvet-chat-jjxw.vercel.app/api/availability?creatorCode=' + creatorCode);
+                const data = await res.json();
+                let existing = [];
+                if (data.success && data.slots) {
+                    // Convert slot objects back to key strings
+                    // Note: availability API returns formatted slots, we store raw in Firestore directly
+                }
+                // Load raw slots from Firestore
+                const availDoc = await getDoc(doc(db, 'availability', creatorCode));
+                if (availDoc.exists()) {
+                    const rawSlots = availDoc.data().slots || [];
+                    existing = rawSlots.map(s => s.dayOfWeek + '_' + s.hour + '_' + (s.minute || 0));
+                }
+                buildTimePicker(existing);
+            } catch(e) {
+                console.error('Load availability error:', e);
+                buildTimePicker([]);
+            }
+        }
+
+        window.saveAvailability = async function() {
+            const btn = document.getElementById('saveAvailBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const creatorCode = sessionStorage.getItem('creatorCode');
+                // Convert Set of "dayIdx_hour_minute" to slot objects
+                const slots = Array.from(selectedSlots).map(key => {
+                    const [dayOfWeek, hour, minute] = key.split('_').map(Number);
+                    return { dayOfWeek, hour, minute };
+                });
+
+                const res = await fetch('https://velvet-chat-jjxw.vercel.app/api/availability', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ creatorCode, slots }),
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('availMsg').style.display = 'block';
+                    setTimeout(() => document.getElementById('availMsg').style.display = 'none', 3000);
+                } else {
+                    alert('Error saving: ' + data.error);
+                }
+            } catch(e) {
+                alert('Error saving availability: ' + e.message);
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Save Availability';
+        };
+
+        // ── BOOKINGS ──────────────────────────────────────────────────────────
+        async function loadBookings(creatorCode) {
+            try {
+                const res = await fetch('https://velvet-chat-jjxw.vercel.app/api/whereby?creatorCode=' + creatorCode);
+                const data = await res.json();
+                const container = document.getElementById('bookingsContainer');
+
+                if (!data.success || data.bookings.length === 0) {
+                    container.innerHTML = '<div class="loading">No upcoming calls booked yet.</div>';
+                    return;
+                }
+
+                // Only show future bookings
+                const now = new Date();
+                const upcoming = data.bookings.filter(b => new Date(b.scheduledAt) > now && b.status === 'confirmed');
+
+                if (upcoming.length === 0) {
+                    container.innerHTML = '<div class="loading">No upcoming calls.</div>';
+                    return;
+                }
+
+                let html = '';
+                upcoming.forEach(booking => {
+                    const dt = new Date(booking.scheduledAt);
+                    const dateStr = dt.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+                    const timeStr = dt.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+                    const minsUntil = Math.round((dt - now) / 60000);
+                    const canJoin = minsUntil <= 10;
+
+                    html += '<div style="background:#f8f8f8;border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">';
+                    html += '<div>';
+                    html += '<div style="font-weight:600;font-size:15px;">' + dateStr + ' at ' + timeStr + '</div>';
+                    html += '<div style="font-size:13px;color:#666;margin-top:2px;">' + booking.duration + ' min call · Client ID: ' + booking.userId.slice(0,8) + '...</div>';
+                    if (minsUntil <= 60) {
+                        html += '<div style="font-size:12px;color:#e74c3c;margin-top:4px;">Starting in ' + minsUntil + ' mins</div>';
+                    }
+                    html += '</div>';
+                    html += '<a href="' + booking.hostRoomUrl + '" target="_blank" style="padding:10px 16px;background:' + (canJoin ? '#27ae60' : '#1e3a8a') + ';color:#fff;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;">' + (canJoin ? '🟢 Join Now' : '📹 Join') + '</a>';
+                    html += '</div>';
+                });
+
+                container.innerHTML = html;
+            } catch(e) {
+                console.error('Load bookings error:', e);
+                document.getElementById('bookingsContainer').innerHTML = '<div class="loading">Error loading bookings.</div>';
+            }
         }
 
         // Logout
