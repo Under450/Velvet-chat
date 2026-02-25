@@ -333,26 +333,27 @@
         }
 
         window.calcEquals = function() {
-            // Check secret codes via calcValue
+            // Check secret codes via calcValue (digits+dot then = pressed)
             if (!calcOperatorValue) {
-                if (calcValue === '1234.') {
+                const code = calcValue;
+                if (code === '1234.' || code === '1234') {
                     const user = auth.currentUser;
                     window.location.href = user ? 'welcome.html' : 'auth.html';
                     return;
                 }
-                if (calcValue === '1534.') {
+                if (code === '1534.' || code === '1534') {
                     window.location.href = 'creator-login.html';
                     return;
                 }
-                if (calcValue === '8889.') {
+                if (code === '8889.' || code === '8889') {
                     window.location.href = 'teaser.html';
                     return;
                 }
-                if (calcValue === '735.') {
+                if (code === '735.' || code === '735') {
                     window.location.href = 'admin/admin-login.html';
                     return;
                 }
-                if (calcValue === '78321.') {
+                if (code === '78321.' || code === '78321') {
                     window.location.href = 'sitemap.html';
                     return;
                 }
