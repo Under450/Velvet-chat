@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Booked — Velvet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .tick {
+      width: 80px; height: 80px;
+      background: rgba(52,199,89,0.15);
+      border: 2px solid #34c759;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin-bottom: 24px;
+      animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 32px; line-height: 1.5; }
+
+    .booking-card {
+      width: 100%;
+      max-width: 360px;
+      background: #1c1c1e;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .booking-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 15px;
+    }
+
+    .booking-row:last-child { border-bottom: none; }
+    .booking-row .lbl { color: rgba(255,255,255,0.5); }
+    .booking-row .val { font-weight: 600; }
+    .booking-row .val.gold { color: #ff9500; }
+
+    .notif-note {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(52,199,89,0.08);
+      border: 1px solid rgba(52,199,89,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: rgba(52,199,89,0.9);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .join-btn {
+      width: 100%;
+      max-width: 360px;
+      padding: 16px;
+      background: #ff9500;
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .join-btn.active {
+      opacity: 1;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,149,0,0.4); }
+      50%       { box-shadow: 0 0 0 12px rgba(255,149,0,0); }
+    }
+
+    .back-chat-btn {
+      background: none;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 14px;
+      color: #fff;
+      font-size: 16px;
+      padding: 14px;
+      width: 100%;
+      max-width: 360px;
+      cursor: pointer;
+    }
+
+    .countdown {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 12px;
+    }
+
+    .countdown span { color: #ff9500; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="tick">✓</div>
+  <h1>You're booked!</h1>
+  <p class="subtitle">Your call is confirmed.<br>We'll remind you 15 minutes before.</p>
+
+  <div class="booking-card">
+    <div class="booking-row">
+      <span class="lbl">Creator</span>
+      <span class="val" id="bcCreator">—</span>
+    </div>
+    <div class="booking-row">
+      <span class="lbl">Date & Time</span>
+      <span class="val" id="bcDateTime">—</span>
+    </div>
+    <div class="booking-row">
+      <span class="lbl">Duration</span>
+      <span class="val" id="bcDuration">—</span>
+    </div>
+    <div class="booking-row">
+      <span class="lbl">Paid</span>
+      <span class="val gold" id="bcPrice">—</span>
+    </div>
+  </div>
+
+  <div class="notif-note">
+    📧 Confirmation sent to your email<br>
+    🔔 Push notification 15 mins before your call
+  </div>
+
+  <button class="join-btn" id="joinBtn" onclick="joinCall()">Join Call</button>
+  <button class="back-chat-btn" onclick="window.location.href='velvet-chat.html'">Back to Chat</button>
+  <div class="countdown" id="countdown"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+      authDomain: "velvet-app-1733e.firebaseapp.com",
+      projectId: "velvet-app-1733e",
+      storageBucket: "velvet-app-1733e.firebasestorage.app",
+      messagingSenderId: "514672347699",
+      appId: "1:514672347699:web:a70516f6383e0069a7f146"
+    };
+
+    initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    const API = 'https://velvet-chat-jjxw.vercel.app';
+
+    let bookingData = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = 'auth.html'; return; }
+
+      // Get booking from sessionStorage (set after Stripe redirect)
+      const pending = sessionStorage.getItem('pendingBooking');
+      if (!pending) {
+        // No pending booking - they may have navigated here directly
+        // Try to get their latest booking from the API
+        try {
+          const res = await fetch(`${API}/api/whereby?userId=${user.uid}`);
+          const data = await res.json();
+          if (data.success && data.bookings.length > 0) {
+            bookingData = data.bookings[0];
+            populateUI(bookingData);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        return;
+      }
+
+      const pending_parsed = JSON.parse(pending);
+
+      // Create the actual booking now (after payment confirmed)
+      try {
+        const res = await fetch(`${API}/api/whereby`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.uid,
+            creatorCode: pending_parsed.creatorCode,
+            creatorName: pending_parsed.creatorName,
+            duration: pending_parsed.duration,
+            scheduledAt: pending_parsed.scheduledAt,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          bookingData = { ...pending_parsed, ...data };
+          sessionStorage.removeItem('pendingBooking');
+          sessionStorage.setItem('activeBooking', JSON.stringify(bookingData));
+          populateUI(bookingData);
+        }
+      } catch (e) {
+        console.error('Booking creation error:', e);
+      }
+    });
+
+    function populateUI(booking) {
+      const dt = new Date(booking.scheduledAt);
+      document.getElementById('bcCreator').textContent = booking.creatorName || booking.creatorCode;
+      document.getElementById('bcDateTime').textContent = dt.toLocaleDateString('en-GB', {
+        weekday: 'short', day: 'numeric', month: 'short'
+      }) + ' ' + dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('bcDuration').textContent = booking.duration + ' mins';
+      document.getElementById('bcPrice').textContent = booking.duration === 15 ? '£25' : '£50';
+
+      startCountdown(dt);
+    }
+
+    function startCountdown(callTime) {
+      const joinBtn = document.getElementById('joinBtn');
+      const countdownEl = document.getElementById('countdown');
+
+      function update() {
+        const now = new Date();
+        const diff = callTime.getTime() - now.getTime();
+
+        if (diff <= 0) {
+          // Call time - enable join button
+          joinBtn.classList.add('active');
+          joinBtn.textContent = 'Join Call Now 📹';
+          countdownEl.innerHTML = '';
+          clearInterval(interval);
+          return;
+        }
+
+        // Enable join button 5 minutes early
+        if (diff <= 5 * 60 * 1000) {
+          joinBtn.classList.add('active');
+          joinBtn.textContent = 'Join Call — Starting Soon';
+        }
+
+        const hours   = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        let countdownText = 'Call starts in ';
+        if (hours > 0) countdownText += `<span>${hours}h </span>`;
+        countdownText += `<span>${minutes}m </span><span>${seconds}s</span>`;
+        countdownEl.innerHTML = countdownText;
+      }
+
+      const interval = setInterval(update, 1000);
+      update();
+    }
+
+    window.joinCall = function() {
+      const booking = JSON.parse(sessionStorage.getItem('activeBooking') || '{}');
+      if (booking.roomUrl) {
+        sessionStorage.setItem('callRoomUrl', booking.roomUrl);
+        sessionStorage.setItem('callCreatorName', booking.creatorName);
+        sessionStorage.setItem('callDuration', booking.duration);
+        sessionStorage.setItem('callScheduledAt', booking.scheduledAt);
+        window.location.href = 'video-call.html';
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Video Call — Velvet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top bar - overlaid on video */
+    .call-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 52px 20px 12px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    }
+
+    .call-creator-name {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .call-timer {
+      background: rgba(255,149,0,0.2);
+      border: 1px solid rgba(255,149,0,0.4);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 14px;
+      color: #ff9500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .call-timer.warning {
+      background: rgba(255,59,48,0.2);
+      border-color: rgba(255,59,48,0.4);
+      color: #ff3b30;
+    }
+
+    /* Whereby iframe - full screen */
+    #wherebyFrame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      z-index: 1;
+    }
+
+    /* Waiting screen (shown before room loads) */
+    .waiting-screen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .waiting-screen.hidden { display: none; }
+
+    .waiting-avatar {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4d8d, #c2185b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 600;
+    }
+
+    .waiting-screen h2 { font-size: 22px; font-weight: 600; }
+    .waiting-screen p  { font-size: 14px; color: rgba(255,255,255,0.5); text-align: center; padding: 0 40px; }
+
+    .connecting-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .connecting-dots span {
+      width: 8px; height: 8px;
+      background: #ff9500;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .connecting-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .connecting-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50%       { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* End call overlay */
+    .end-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .end-overlay.show { display: flex; }
+
+    .end-overlay h2 { font-size: 26px; font-weight: 700; }
+    .end-overlay p  { font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+    .end-btn {
+      width: 100%;
+      max-width: 320px;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .end-btn.primary { background: #ff9500; color: #000; }
+    .end-btn.secondary { background: #1c1c1e; color: #fff; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Waiting screen -->
+  <div class="waiting-screen" id="waitingScreen">
+    <div class="waiting-avatar" id="waitingInitial">?</div>
+    <h2 id="waitingName">Connecting...</h2>
+    <p>Setting up your private room.<br>This will only take a moment.</p>
+    <div class="connecting-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Top bar -->
+  <div class="call-topbar">
+    <div class="call-creator-name" id="topbarCreator"></div>
+    <div class="call-timer" id="callTimer">--:--</div>
+  </div>
+
+  <!-- Whereby iframe (Velvet branded - no Whereby logo shown to users) -->
+  <iframe
+    id="wherebyFrame"
+    allow="camera; microphone; fullscreen; speaker; display-capture"
+    style="display:none;"
+  ></iframe>
+
+  <!-- Call ended overlay -->
+  <div class="end-overlay" id="endOverlay">
+    <div style="font-size:48px;">✨</div>
+    <h2>Call ended</h2>
+    <p id="endMsg">Hope you enjoyed your time together.</p>
+    <button class="end-btn primary" onclick="window.location.href='velvet-chat.html'">Back to Chat</button>
+    <button class="end-btn secondary" onclick="window.location.href='book-call.html'">Book Another Call</button>
+  </div>
+
+  <script>
+    const roomUrl    = sessionStorage.getItem('callRoomUrl');
+    const creatorName = sessionStorage.getItem('callCreatorName') || 'Creator';
+    const duration   = parseInt(sessionStorage.getItem('callDuration') || '15');
+    const scheduledAt = sessionStorage.getItem('callScheduledAt');
+
+    // If no room URL, redirect back
+    if (!roomUrl) {
+      window.location.href = 'velvet-chat.html';
+    }
+
+    // Set UI text
+    document.getElementById('waitingInitial').textContent = creatorName.charAt(0).toUpperCase();
+    document.getElementById('waitingName').textContent = creatorName;
+    document.getElementById('topbarCreator').textContent = creatorName + ' ✨';
+
+    // Load Whereby with branding hidden
+    // ?minimal=1&skipMediaPermissionPrompt=1&background=off hides Whereby chrome
+    const frame = document.getElementById('wherebyFrame');
+    const urlObj = new URL(roomUrl);
+    urlObj.searchParams.set('minimal', '1');
+    urlObj.searchParams.set('skipMediaPermissionPrompt', '0');
+    urlObj.searchParams.set('background', 'off');
+    urlObj.searchParams.set('chat', 'off');
+    urlObj.searchParams.set('people', 'off');
+    urlObj.searchParams.set('logo', 'off');
+    urlObj.searchParams.set('topToolbar', 'off');
+    urlObj.searchParams.set('bottomToolbar', 'on');
+
+    frame.src = urlObj.toString();
+
+    // Show frame after short delay (let it load)
+    setTimeout(() => {
+      document.getElementById('waitingScreen').classList.add('hidden');
+      frame.style.display = 'block';
+      startTimer(duration * 60);
+    }, 3000);
+
+    // Countdown timer
+    function startTimer(totalSeconds) {
+      const timerEl = document.getElementById('callTimer');
+      let remaining = totalSeconds;
+
+      const interval = setInterval(() => {
+        remaining--;
+
+        if (remaining <= 0) {
+          clearInterval(interval);
+          showEndOverlay(true);
+          return;
+        }
+
+        const m = Math.floor(remaining / 60);
+        const s = String(remaining % 60).padStart(2, '0');
+        timerEl.textContent = m + ':' + s + ' left';
+
+        // Warning colour in last 2 minutes
+        if (remaining <= 120) {
+          timerEl.classList.add('warning');
+        }
+
+        // 2-minute warning
+        if (remaining === 120) {
+          showWarning('2 minutes remaining');
+        }
+
+      }, 1000);
+    }
+
+    function showWarning(msg) {
+      const banner = document.createElement('div');
+      banner.style.cssText = `
+        position:fixed; top:100px; left:50%; transform:translateX(-50%);
+        background:rgba(255,59,48,0.9); color:#fff; padding:10px 20px;
+        border-radius:20px; font-size:14px; font-weight:600;
+        z-index:300; animation:fadeIn 0.3s ease;
+      `;
+      banner.textContent = '⏱ ' + msg;
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 4000);
+    }
+
+    function showEndOverlay(timeUp) {
+      document.getElementById('endOverlay').classList.add('show');
+      if (timeUp) {
+        document.getElementById('endMsg').textContent = 'Your ' + duration + ' minute call has ended. Hope you had a great time! 💗';
+      }
+      // Clear call session data
+      sessionStorage.removeItem('callRoomUrl');
+      sessionStorage.removeItem('callCreatorName');
+      sessionStorage.removeItem('callDuration');
+      sessionStorage.removeItem('callScheduledAt');
+    }
+  </script>
+</body>
+</html>

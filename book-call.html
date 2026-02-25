@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Book a Call — Velvet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 56px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .back-btn {
+      color: #ff9500;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 4px 8px 4px 0;
+      text-decoration: none;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    /* Creator strip */
+    .creator-strip {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .creator-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4d8d, #c2185b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 600; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .creator-name { font-size: 17px; font-weight: 600; }
+    .creator-sub  { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+    /* Section label */
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.4);
+      padding: 20px 20px 10px;
+      text-transform: uppercase;
+    }
+
+    /* Duration cards */
+    .duration-row {
+      display: flex;
+      gap: 12px;
+      padding: 0 20px;
+    }
+
+    .duration-card {
+      flex: 1;
+      background: #1c1c1e;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .duration-card.selected {
+      border-color: #ff9500;
+      background: rgba(255,149,0,0.1);
+    }
+
+    .duration-card .mins {
+      font-size: 36px;
+      font-weight: 300;
+      color: #ff9500;
+      line-height: 1;
+    }
+
+    .duration-card .mins-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 10px;
+    }
+
+    .duration-card .price {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    /* Slots */
+    .slots-scroll {
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slot-day-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      margin-top: 8px;
+      padding: 4px 0;
+    }
+
+    .slots-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .slot-btn {
+      background: #1c1c1e;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .slot-btn:active, .slot-btn.selected {
+      border-color: #ff9500;
+      background: rgba(255,149,0,0.15);
+      color: #ff9500;
+    }
+
+    .no-slots {
+      padding: 20px;
+      text-align: center;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Summary bar */
+    .summary-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: #1c1c1e;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 16px 20px;
+      display: none;
+    }
+
+    .summary-bar.show { display: block; }
+
+    .summary-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .summary-details .info { font-size: 14px; color: rgba(255,255,255,0.6); }
+    .summary-details .info strong { color: #fff; display: block; font-size: 16px; }
+    .summary-details .total { font-size: 24px; font-weight: 700; color: #ff9500; }
+
+    .pay-btn {
+      width: 100%;
+      padding: 16px;
+      background: #ff9500;
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .pay-btn:active { opacity: 0.85; }
+    .pay-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .loading-msg {
+      text-align: center;
+      padding: 30px 20px;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #ff9500;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <a class="back-btn" id="backBtn">‹</a>
+    <h1>Book a Video Call</h1>
+  </div>
+
+  <div class="creator-strip">
+    <div class="creator-avatar" id="creatorInitial">?</div>
+    <div>
+      <div class="creator-name" id="creatorName">Loading...</div>
+      <div class="creator-sub">Video call · inside Velvet</div>
+    </div>
+  </div>
+
+  <div class="section-label">Duration</div>
+  <div class="duration-row">
+    <div class="duration-card selected" id="dur15" onclick="selectDuration(15, 2500)">
+      <div class="mins">15</div>
+      <div class="mins-label">minutes</div>
+      <div class="price">£25</div>
+    </div>
+    <div class="duration-card" id="dur30" onclick="selectDuration(30, 5000)">
+      <div class="mins">30</div>
+      <div class="mins-label">minutes</div>
+      <div class="price">£50</div>
+    </div>
+  </div>
+
+  <div class="section-label">Available Times</div>
+  <div class="slots-scroll" id="slotsContainer">
+    <div class="loading-msg"><span class="spinner"></span>Loading availability...</div>
+  </div>
+
+  <div style="height: 180px;"></div>
+
+  <!-- Fixed bottom summary + pay button -->
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-details">
+      <div class="info">
+        <span id="summaryDateTime">Select a time</span>
+        <strong id="summaryDuration">15 mins</strong>
+      </div>
+      <div class="total" id="summaryPrice">£25</div>
+    </div>
+    <button class="pay-btn" id="payBtn" onclick="proceedToPayment()">Pay & Confirm</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+      authDomain: "velvet-app-1733e.firebaseapp.com",
+      projectId: "velvet-app-1733e",
+      storageBucket: "velvet-app-1733e.firebasestorage.app",
+      messagingSenderId: "514672347699",
+      appId: "1:514672347699:web:a70516f6383e0069a7f146"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const API = 'https://velvet-chat-jjxw.vercel.app';
+
+    let currentUser = null;
+    let creatorCode = sessionStorage.getItem('creatorCode');
+    let creatorName = sessionStorage.getItem('creatorName') || 'Creator';
+    let selectedDuration = 15;
+    let selectedPricePence = 2500;
+    let selectedSlot = null;
+
+    // Set back button
+    document.getElementById('backBtn').onclick = () => history.back();
+
+    // Set creator info
+    document.getElementById('creatorName').textContent = creatorName;
+    document.getElementById('creatorInitial').textContent = creatorName.charAt(0).toUpperCase();
+
+    // Auth check
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'auth.html';
+        return;
+      }
+      currentUser = user;
+      loadSlots();
+    });
+
+    // Load available slots
+    async function loadSlots() {
+      if (!creatorCode) {
+        document.getElementById('slotsContainer').innerHTML = '<div class="no-slots">No creator selected.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/api/availability?creatorCode=${creatorCode}`);
+        const data = await res.json();
+
+        if (!data.success || data.slots.length === 0) {
+          document.getElementById('slotsContainer').innerHTML =
+            '<div class="no-slots">No availability set yet.<br>Check back soon!</div>';
+          return;
+        }
+
+        // Group slots by date
+        const grouped = {};
+        data.slots.forEach(slot => {
+          const key = slot.date;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(slot);
+        });
+
+        let html = '';
+        Object.entries(grouped).forEach(([date, slots]) => {
+          html += `<div class="slot-day-header">${date}</div><div class="slots-row">`;
+          slots.forEach(slot => {
+            html += `<button class="slot-btn" onclick="selectSlot(this, '${slot.dateTime}', '${slot.date}', '${slot.time}')">${slot.time}</button>`;
+          });
+          html += '</div>';
+        });
+
+        document.getElementById('slotsContainer').innerHTML = html;
+
+      } catch (err) {
+        console.error('Load slots error:', err);
+        document.getElementById('slotsContainer').innerHTML =
+          '<div class="no-slots">Could not load availability. Please try again.</div>';
+      }
+    }
+
+    // Select duration
+    window.selectDuration = function(mins, pence) {
+      selectedDuration = mins;
+      selectedPricePence = pence;
+
+      document.getElementById('dur15').classList.toggle('selected', mins === 15);
+      document.getElementById('dur30').classList.toggle('selected', mins === 30);
+
+      document.getElementById('summaryDuration').textContent = mins + ' mins';
+      document.getElementById('summaryPrice').textContent = '£' + (pence / 100);
+
+      if (selectedSlot) {
+        document.getElementById('payBtn').textContent = 'Pay £' + (pence / 100) + ' & Confirm';
+      }
+    };
+
+    // Select time slot
+    window.selectSlot = function(el, dateTime, date, time) {
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+
+      selectedSlot = dateTime;
+      document.getElementById('summaryDateTime').textContent = date + ' at ' + time;
+      document.getElementById('summaryDuration').textContent = selectedDuration + ' mins';
+      document.getElementById('summaryPrice').textContent = '£' + (selectedPricePence / 100);
+      document.getElementById('payBtn').textContent = 'Pay £' + (selectedPricePence / 100) + ' & Confirm';
+      document.getElementById('summaryBar').classList.add('show');
+    };
+
+    // Proceed to Stripe payment
+    window.proceedToPayment = async function() {
+      if (!selectedSlot || !currentUser) return;
+
+      const btn = document.getElementById('payBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        // Store booking intent in sessionStorage so webhook can complete it
+        sessionStorage.setItem('pendingBooking', JSON.stringify({
+          userId: currentUser.uid,
+          creatorCode,
+          creatorName,
+          duration: selectedDuration,
+          scheduledAt: selectedSlot,
+        }));
+
+        // Create Stripe checkout session
+        const res = await fetch(`${API}/api/stripe-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            packageId: 'video_call_' + selectedDuration,
+            amountPence: selectedPricePence,
+            packageName: `${selectedDuration} min video call with ${creatorName}`,
+            userId: currentUser.uid,
+            creatorCode,
+            // Tell webhook this is a booking, not credits
+            bookingData: {
+              creatorCode,
+              creatorName,
+              duration: selectedDuration,
+              scheduledAt: selectedSlot,
+            },
+            successUrl: window.location.origin + '/Velvet-chat/booking-confirmed.html',
+            cancelUrl: window.location.href,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Payment failed');
+        }
+
+      } catch (err) {
+        console.error('Payment error:', err);
+        alert('Payment failed: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Pay £' + (selectedPricePence / 100) + ' & Confirm';
+      }
+    };
+  </script>
+</body>
+</html>
