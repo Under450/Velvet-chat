@@ -268,7 +268,7 @@
             width: 200px;
             display: block;
             border-radius: 12px;
-            filter: blur(2px);
+            filter: blur(0.5px);
             transform: scale(1.05);
         }
 
@@ -948,9 +948,14 @@ window.sendMessage = async function() {
             }
             return;
         }
-        await updateDoc(userDocRef, {
-            [`credits.${creatorCode}.chocolates`]: currentChocs - 1
-        });
+        const updatedCredits = {
+            ...(userData.credits || {}),
+            [creatorCode]: {
+                ...currentCredits,
+                chocolates: currentChocs - 1
+            }
+        };
+        await setDoc(userDocRef, { credits: updatedCredits }, { merge: true });
         // Update credits bar
         document.getElementById('creditChocs').textContent = currentChocs - 1;
 
