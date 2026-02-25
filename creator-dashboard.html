@@ -221,6 +221,29 @@
             <button class="upload-btn" id="uploadBtn" onclick="uploadContent()">Upload Content</button>
         </div>
         
+        <!-- Picture of the Day -->
+        <div class="upload-section">
+            <h2>📅 Picture of the Day</h2>
+            <p style="color:#666;font-size:14px;margin-bottom:20px;">Upload a photo for a specific day. Clients pay 1 rose to unlock it at the top of the chat.</p>
+            <div class="form-group">
+                <label>Select Day</label>
+                <input type="date" id="potdDate" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
+            </div>
+            <div class="form-group">
+                <label>Title (optional)</label>
+                <input type="text" id="potdTitle" placeholder="e.g. Good morning 💗" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
+            </div>
+            <div class="form-group">
+                <label>Photo</label>
+                <input type="file" id="potdFile" accept="image/*">
+            </div>
+            <div class="progress" id="potdProgress">
+                <div class="progress-bar"><div class="progress-fill" id="potdProgressFill"></div></div>
+            </div>
+            <button class="upload-btn" id="potdBtn" onclick="uploadPotd()">Upload Picture of the Day</button>
+            <div id="potdList" style="margin-top:20px;"></div>
+        </div>
+
         <!-- Media Gallery -->
         <div class="upload-section">
             <h2>Your Content</h2>
@@ -276,6 +299,9 @@ const creatorDoc = creatorsSnapshot.docs[0];
 currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             document.getElementById('creatorName').textContent = `${currentCreator.name} • Code: ${currentCreator.code}`;
             loadMedia();
+            loadPotdList();
+            // Set today as default date
+            document.getElementById('potdDate').value = new Date().toISOString().split('T')[0];
         });
         
         // Upload content
@@ -409,6 +435,76 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             }
         }
         
+        // Upload Picture of the Day
+        window.uploadPotd = async function() {
+            const file = document.getElementById('potdFile').files[0];
+            const date = document.getElementById('potdDate').value;
+            const title = document.getElementById('potdTitle').value || 'Picture of the Day';
+
+            if (!file) { alert('Please select a photo'); return; }
+            if (!date) { alert('Please select a day'); return; }
+
+            const btn = document.getElementById('potdBtn');
+            const progress = document.getElementById('potdProgress');
+            const fill = document.getElementById('potdProgressFill');
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+            progress.style.display = 'block';
+
+            const timestamp = Date.now();
+            const fileName = `${currentCreator.code}/potd/${timestamp}_${file.name}`;
+            const storageRef = ref(storage, `creator-content/${fileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed',
+                (snap) => { fill.style.width = (snap.bytesTransferred/snap.totalBytes*100) + '%'; },
+                (err) => { alert('Upload failed: ' + err.message); btn.disabled=false; btn.textContent='Upload Picture of the Day'; progress.style.display='none'; },
+                async () => {
+                    const url = await getDownloadURL(uploadTask.snapshot.ref);
+                    await addDoc(collection(db, 'picture_of_day'), {
+                        creatorCode: currentCreator.code,
+                        day: date,
+                        url: url,
+                        title: title,
+                        cost: 1,
+                        uploadedAt: new Date()
+                    });
+                    alert('✓ Picture of the Day uploaded!');
+                    document.getElementById('potdFile').value = '';
+                    document.getElementById('potdTitle').value = '';
+                    fill.style.width = '0%';
+                    btn.disabled = false;
+                    btn.textContent = 'Upload Picture of the Day';
+                    progress.style.display = 'none';
+                    loadPotdList();
+                }
+            );
+        }
+
+        // Load existing POTD entries
+        async function loadPotdList() {
+            const snap = await getDocs(query(collection(db, 'picture_of_day'), where('creatorCode', '==', currentCreator.code)));
+            const container = document.getElementById('potdList');
+            if (snap.empty) { container.innerHTML = '<p style="color:#999;font-size:14px;">No pictures uploaded yet.</p>'; return; }
+            const sorted = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b) => a.day > b.day ? -1 : 1);
+            container.innerHTML = sorted.map(p => `
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
+                    <img src="${p.url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:14px;">${p.title}</div>
+                        <div style="color:#888;font-size:12px;">${p.day}</div>
+                    </div>
+                    <button onclick="deletePotd('${p.id}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        window.deletePotd = async function(id) {
+            if (!confirm('Delete this Picture of the Day?')) return;
+            await deleteDoc(doc(db, 'picture_of_day', id));
+            loadPotdList();
+        }
+
         // Logout
         window.logout = async function() {
             if (confirm('Logout?')) {
