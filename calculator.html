@@ -175,30 +175,28 @@
 
         window.calculate = function() {
             passcodeAttempt += '=';
-            const digits = passcodeDigits;
             passcodeDigits = '';
-            
-            // Check secret codes by digits only
-            if (digits === '1234' || digits === '1234.') {
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        window.location.href = 'welcome.html';
-                    } else {
-                        window.location.href = 'auth.html';
-                    }
-                });
+
+            // Check secret codes - match end of passcodeAttempt
+            if (passcodeAttempt.includes('1234.') || passcodeAttempt.includes('1234=')) {
                 passcodeAttempt = '';
+                onAuthStateChanged(auth, (user) => {
+                    window.location.href = user ? 'welcome.html' : 'auth.html';
+                });
                 return;
             }
-            if (digits === '1534' || digits === '1534.') {
+            if (passcodeAttempt.includes('1534.') || passcodeAttempt.includes('1534=')) {
+                passcodeAttempt = '';
                 window.location.href = 'creators.html';
                 return;
             }
-            if (digits === '8889' || digits === '8889.') {
+            if (passcodeAttempt.includes('8889.') || passcodeAttempt.includes('8889=')) {
+                passcodeAttempt = '';
                 window.location.href = 'browse-creators.html';
                 return;
             }
-            if (digits === '735' || digits === '735.') {
+            if (passcodeAttempt.includes('735.') || passcodeAttempt.includes('735=')) {
+                passcodeAttempt = '';
                 window.location.href = 'admin/admin-dashboard.html';
                 return;
             }
