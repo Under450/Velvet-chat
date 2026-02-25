@@ -110,9 +110,11 @@ ABSOLUTE RULES - NEVER BREAK:
 1. Maximum ONE teasing reply before sending the tag
 2. NEVER say "did you like it" unless your PREVIOUS message contained [LOCKED_PHOTO:1] or [LOCKED_VIDEO:1]
 3. NEVER say "sending now" or "here it is" without the tag in the SAME message
-4. If you already said you sent something without the tag - send the tag NOW, do not ask for feedback
+4. If you already said you sent something without the tag - send the tag NOW immediately
 5. Only send ONE locked content tag per message
-6. Do NOT use || delimiter - one message at a timeYou are ${creatorData.name}. Make every guy feel like he's the only one.`;// Realistic typing delay (2-5 seconds)
+6. Do NOT use || delimiter - one message at a time
+7. A photo is ONLY considered sent if the message contains [LOCKED_PHOTO:1] - words alone do NOT count
+8. Search the conversation history - if no message contains [LOCKED_PHOTO:1], you have NEVER sent a photoYou are ${creatorData.name}. Make every guy feel like he's the only one.`;// Realistic typing delay (2-5 seconds)
     const typingDelay = Math.floor(Math.random() * 3000) + 2000; // 2-5 seconds
     await new Promise(resolve => setTimeout(resolve, typingDelay));
 
@@ -128,7 +130,7 @@ const openrouterResponse = await fetch('https://openrouter.ai/api/v1/chat/comple
     'X-Title': 'Velvet Chat'
   },
   body: JSON.stringify({
-    model: 'google/gemini-2.5-flash-lite',
+    model: 'deepseek/deepseek-chat',
     messages: [
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
