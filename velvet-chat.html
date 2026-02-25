@@ -256,33 +256,46 @@
         /* Locked content */
         .locked-content {
             width: 200px;
-            height: 150px;
             border-radius: 12px;
-            background: #F2F2F7;
-            border: 1px solid #E5E5EA;
+            overflow: hidden;
+            cursor: pointer;
+            margin-top: 5px;
+            position: relative;
+            display: block;
+        }
+
+        .locked-content .locked-bg-img {
+            width: 200px;
+            display: block;
+            border-radius: 12px;
+            filter: blur(12px);
+            transform: scale(1.05);
+        }
+
+        .locked-content .locked-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            margin-top: 5px;
-            transition: all 0.2s;
+            gap: 8px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 12px;
         }
 
         .locked-content:active {
             transform: scale(0.98);
-            background: #E5E5EA;
         }
 
         .locked-icon {
-            font-size: 40px;
+            font-size: 36px;
         }
 
         .unlock-text {
             font-size: 13px;
             font-weight: 500;
-            color: #8E8E93;
+            color: #fff;
         }
 
         .unlock-cost {
@@ -812,8 +825,11 @@
                         msgDiv.innerHTML = `<div class="message-bubble">
                             ${cleanMessage ? cleanMessage + '<br>' : ''}
                             <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
-                                <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
-                                <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
+                                <img class="locked-bg-img" src="https://picsum.photos/200/150?blur=10&random=${mediaId}" alt="">
+                                <div class="locked-overlay">
+                                    <div class="locked-icon">🔒</div>
+                                    <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'} to unlock</div>
+                                </div>
                             </div>
                         </div>`;
                     } else {
@@ -987,9 +1003,11 @@ window.sendMessage = async function() {
                     <div class="message-bubble">
                         ${cleanMessage}
                         <div class="locked-content" id="locked-${mediaId}" onclick="unlockContent('${mediaId}', '${contentType}', ${cost})">
-                            <div class="locked-icon">${contentType === 'photo' ? '📸' : '🎬'}</div>
-                            <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'}</div>
-                            <div class="unlock-cost">${cost} credits</div>
+                            <img class="locked-bg-img" src="https://picsum.photos/200/150?blur=10&random=${mediaId}" alt="">
+                            <div class="locked-overlay">
+                                <div class="locked-icon">🔒</div>
+                                <div class="unlock-cost">${cost} ${contentType === 'photo' ? '🌹 Roses' : '❤️ Hearts'} to unlock</div>
+                            </div>
                         </div>
                     </div>`;
             } else {
@@ -1060,7 +1078,7 @@ window.sendMessage = async function() {
                 if (lockedEl && mediaData.media.url) {
                     lockedEl.onclick = null;
                     if (contentType === 'photo') {
-                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;" alt="Unlocked photo">`;
+                        lockedEl.innerHTML = `<img src="${mediaData.media.url}" style="width:200px;border-radius:12px;display:block;cursor:pointer;" alt="Unlocked photo" onclick="openImageModal('${mediaData.media.url}')">`;
                     } else {
                         lockedEl.innerHTML = `<video src="${mediaData.media.url}" controls style="width:200px;border-radius:12px;display:block;"></video>`;
                     }
