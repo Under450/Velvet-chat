@@ -167,4 +167,4 @@ const aiResponse = openrouterData.choices[0].message.content;
       details: error.message 
     });
   }
-};
+};// prompt v2
