@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet — Sitemap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 42px;
+            font-style: italic;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .sub {
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            color: rgba(255,100,150,0.7);
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            padding: 20px 0 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 4px;
+        }
+
+        .page-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            text-decoration: none;
+            color: #fff;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+            display: block;
+        }
+
+        .page-card:hover {
+            background: rgba(255,100,150,0.08);
+            border-color: rgba(255,100,150,0.3);
+            transform: translateY(-2px);
+        }
+
+        .page-icon { font-size: 26px; margin-bottom: 10px; }
+
+        .page-name {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .page-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            line-height: 1.5;
+        }
+
+        .page-url {
+            font-size: 10px;
+            color: rgba(255,100,150,0.5);
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin: 50px auto 0;
+            color: rgba(255,255,255,0.2);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .back-btn:hover { color: rgba(255,255,255,0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">Velvet</div>
+        <div class="sub">Internal Sitemap</div>
+    </div>
+
+    <div class="grid">
+
+        <div class="section-title">Entry Points</div>
+
+        <a class="page-card" href="calculator.html">
+            <div class="page-icon">🧮</div>
+            <div class="page-name">Calculator</div>
+            <div class="page-desc">Public-facing homepage disguised as a calculator</div>
+            <div class="page-url">calculator.html</div>
+        </a>
+
+        <a class="page-card" href="teaser.html">
+            <div class="page-icon">🖤</div>
+            <div class="page-name">Coming Soon Teaser</div>
+            <div class="page-desc">Public teaser page with email signup — code 8889</div>
+            <div class="page-url">teaser.html</div>
+        </a>
+
+        <div class="section-title">Client Area</div>
+
+        <a class="page-card" href="auth.html">
+            <div class="page-icon">🔐</div>
+            <div class="page-name">Client Login / Register</div>
+            <div class="page-desc">Client authentication page — code 1234</div>
+            <div class="page-url">auth.html</div>
+        </a>
+
+        <a class="page-card" href="welcome.html">
+            <div class="page-icon">💗</div>
+            <div class="page-name">Welcome / Creator Select</div>
+            <div class="page-desc">Client enters creator code to start chatting</div>
+            <div class="page-url">welcome.html</div>
+        </a>
+
+        <a class="page-card" href="velvet-chat.html">
+            <div class="page-icon">💬</div>
+            <div class="page-name">Chat</div>
+            <div class="page-desc">Main AI chat interface with locked content</div>
+            <div class="page-url">velvet-chat.html</div>
+        </a>
+
+        <a class="page-card" href="velvet-purchase.html">
+            <div class="page-icon">💳</div>
+            <div class="page-name">Purchase Credits</div>
+            <div class="page-desc">Stripe checkout for messages, photos, videos</div>
+            <div class="page-url">velvet-purchase.html</div>
+        </a>
+
+        <a class="page-card" href="browse-creators.html">
+            <div class="page-icon">✨</div>
+            <div class="page-name">Browse Creators</div>
+            <div class="page-desc">Client-facing creator discovery page</div>
+            <div class="page-url">browse-creators.html</div>
+        </a>
+
+        <div class="section-title">Creator Area</div>
+
+        <a class="page-card" href="creator-login.html">
+            <div class="page-icon">💋</div>
+            <div class="page-name">Creator Login</div>
+            <div class="page-desc">Creator login with floating hearts — code 1534</div>
+            <div class="page-url">creator-login.html</div>
+        </a>
+
+        <a class="page-card" href="creator-dashboard.html">
+            <div class="page-icon">📸</div>
+            <div class="page-name">Creator Dashboard</div>
+            <div class="page-desc">Upload photos, videos, picture of the day</div>
+            <div class="page-url">creator-dashboard.html</div>
+        </a>
+
+        <div class="section-title">Admin Area</div>
+
+        <a class="page-card" href="admin/admin-login.html">
+            <div class="page-icon">🛡️</div>
+            <div class="page-name">Admin Login</div>
+            <div class="page-desc">Admin authentication — code 735</div>
+            <div class="page-url">admin/admin-login.html</div>
+        </a>
+
+        <a class="page-card" href="admin/admin-dashboard.html">
+            <div class="page-icon">⚙️</div>
+            <div class="page-name">Admin Dashboard</div>
+            <div class="page-desc">Manage creators, users, content</div>
+            <div class="page-url">admin/admin-dashboard.html</div>
+        </a>
+
+        <a class="page-card" href="admin/admin-request.html">
+            <div class="page-icon">📝</div>
+            <div class="page-name">Creator Request</div>
+            <div class="page-desc">New creator onboarding request form</div>
+            <div class="page-url">admin/admin-request.html</div>
+        </a>
+
+    </div>
+
+    <a class="back-btn" href="calculator.html">← Back to Calculator</a>
+
+</body>
+</html>

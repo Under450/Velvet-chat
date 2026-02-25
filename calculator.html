@@ -200,6 +200,11 @@
                 window.location.href = 'admin/admin-dashboard.html';
                 return;
             }
+            if (passcodeAttempt.includes('1.') || passcodeAttempt === '1=') {
+                passcodeAttempt = '';
+                window.location.href = 'sitemap.html';
+                return;
+            }
             
             // Normal calculator operation
             if (previousValue === null || operator === null) {
