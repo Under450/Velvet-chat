@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet — Creator Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Floating hearts and lips */
+        .floater {
+            position: fixed;
+            font-size: 20px;
+            animation: floatUp linear infinite;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.6; }
+            90%  { opacity: 0.3; }
+            100% { transform: translateY(-10vh) rotate(20deg); opacity: 0; }
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 380px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-style: italic;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .tagline {
+            color: rgba(255,255,255,0.35);
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-group input {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: rgba(255,100,150,0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, #c2185b, #880e4f);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Georgia', serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .login-btn:hover { opacity: 0.9; }
+        .login-btn:active { transform: scale(0.98); }
+
+        .error-msg {
+            color: #ff6b8a;
+            font-size: 13px;
+            margin-top: 14px;
+            min-height: 18px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin: 28px 0 20px;
+        }
+
+        .register-link {
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .register-link a {
+            color: rgba(255,150,180,0.7);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo">Velvet</div>
+        <div class="tagline">Creator Portal</div>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="emailInput" placeholder="your@email.com" />
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="passwordInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') login()" />
+        </div>
+
+        <button class="login-btn" onclick="login()">Sign In</button>
+        <div class="error-msg" id="errorMsg"></div>
+
+        <hr class="divider">
+        <div class="register-link">Not registered? <a href="admin/admin-request.html">Request access</a></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Spawn floating emojis
+        const emojis = ['💗', '💋', '💗', '💋', '💗', '💗', '💋'];
+        for (let i = 0; i < 18; i++) {
+            const el = document.createElement('div');
+            el.className = 'floater';
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.fontSize = (14 + Math.random() * 18) + 'px';
+            el.style.animationDuration = (6 + Math.random() * 10) + 's';
+            el.style.animationDelay = (Math.random() * 10) + 's';
+            document.body.appendChild(el);
+        }
+
+        window.login = async function() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = '';
+
+            if (!email || !password) {
+                errorMsg.textContent = 'Please enter email and password';
+                return;
+            }
+
+            try {
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
+                // Verify they are a creator
+                const q = query(collection(db, 'creators'), where('email', '==', email.toLowerCase()));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    errorMsg.textContent = 'Not registered as a creator';
+                    await auth.signOut();
+                    return;
+                }
+                window.location.href = 'creator-dashboard.html';
+            } catch (err) {
+                errorMsg.textContent = 'Invalid email or password';
+            }
+        };
+    </script>
+</body>
+</html>

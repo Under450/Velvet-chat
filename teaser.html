@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velvet — Coming Soon</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .bg {
+            position: fixed;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1200&q=80');
+            background-size: cover;
+            background-position: center top;
+            filter: grayscale(100%) brightness(0.35);
+            z-index: 0;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.5) 100%);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 52px;
+            font-style: italic;
+            color: #fff;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 40px rgba(255,100,150,0.4);
+        }
+
+        .tagline {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
+
+        .coming-soon-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 40px 30px;
+            backdrop-filter: blur(20px);
+        }
+
+        .coming-soon-box h2 {
+            color: #fff;
+            font-size: 22px;
+            font-style: italic;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .coming-soon-box p {
+            color: rgba(255,255,255,0.45);
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .notify-input {
+            width: 100%;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 13px 16px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Georgia', serif;
+            outline: none;
+            margin-bottom: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .notify-input:focus {
+            border-color: rgba(255,100,150,0.5);
+        }
+
+        .notify-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #c2185b, #880e4f);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Georgia', serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .notify-btn:hover { opacity: 0.85; }
+
+        .success-msg {
+            color: rgba(255,150,180,0.8);
+            font-size: 13px;
+            margin-top: 12px;
+            min-height: 18px;
+            font-style: italic;
+        }
+
+        .hearts {
+            margin-top: 30px;
+            font-size: 20px;
+            letter-spacing: 8px;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="overlay"></div>
+
+    <div class="content">
+        <div class="logo">Velvet</div>
+        <div class="tagline">Private Creator Platform</div>
+
+        <div class="coming-soon-box">
+            <h2>Coming Soon</h2>
+            <p>An exclusive, invite-only platform where you connect with your favourite creators on a deeper level. Private messages, exclusive content, and real moments.</p>
+
+            <input class="notify-input" type="email" id="notifyEmail" placeholder="Enter your email to be notified" />
+            <button class="notify-btn" onclick="notifyMe()">Notify Me When We Launch</button>
+            <div class="success-msg" id="successMsg"></div>
+        </div>
+
+        <div class="hearts">💗 💋 💗</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.notifyMe = async function() {
+            const email = document.getElementById('notifyEmail').value.trim();
+            const msg = document.getElementById('successMsg');
+            if (!email || !email.includes('@')) {
+                msg.textContent = 'Please enter a valid email address';
+                return;
+            }
+            try {
+                await addDoc(collection(db, 'notify_list'), {
+                    email: email,
+                    signedUpAt: new Date()
+                });
+                msg.textContent = "You're on the list — we'll be in touch 💗";
+                document.getElementById('notifyEmail').value = '';
+            } catch(e) {
+                msg.textContent = 'Something went wrong, please try again';
+            }
+        };
+    </script>
+</body>
+</html>
