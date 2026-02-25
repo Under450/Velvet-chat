@@ -116,8 +116,19 @@
     </div>
 
     <script type="module">
-        import { auth } from './firebase.js';
-        import { onAuthStateChanged } from 'firebase/auth';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyArbpb25d8UwEL5bE46Oe8yAMTMM1BoGzU",
+            authDomain: "velvet-app-1733e.firebaseapp.com",
+            projectId: "velvet-app-1733e",
+            storageBucket: "velvet-app-1733e.firebasestorage.app",
+            messagingSenderId: "514672347699",
+            appId: "1:514672347699:web:a70516f6383e0069a7f146"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
         let display = document.getElementById('display');
         let currentValue = '0';
