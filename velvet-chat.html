@@ -537,7 +537,7 @@
             <div class="potd-title" id="potdBannerTitle">Picture of the Day</div>
             <div style="color:#aaa;font-size:12px;" id="potdBannerCost">1 🌹 to unlock</div>
         </div>
-        <button class="potd-unlock-btn" id="potdUnlockBtn" onclick="unlockPotd()">Unlock</button>
+        <button class="potd-unlock-btn" id="potdUnlockBtn" onclick="unlockPotd()">Unlock Photo of the Day</button>
     </div>
 
     <!-- Chat messages -->
@@ -673,6 +673,8 @@
                 document.getElementById('potdBannerImg').src = potdData.url;
                 document.getElementById('potdBannerTitle').textContent = potdData.title || 'Picture of the Day';
                 document.getElementById('potdBannerCost').textContent = `${potdData.cost || 1} 🌹 roses to unlock`;
+                const creatorNameForBtn = currentCreator ? currentCreator.name : '';
+                document.getElementById('potdUnlockBtn').textContent = `Unlock ${creatorNameForBtn}'s Photo of the Day`;
                 banner.classList.remove('hidden');
 
                 // Check if already unlocked
