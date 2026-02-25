@@ -333,27 +333,27 @@
         }
 
         window.calcEquals = function() {
-            // Check secret codes via calcValue (digits+dot then = pressed)
+            // Secret codes ONLY work as exact digits + dot + equals
             if (!calcOperatorValue) {
                 const code = calcValue;
-                if (code === '1234.' || code === '1234') {
+                if (code === '1234.') {
                     const user = auth.currentUser;
                     window.location.href = user ? 'welcome.html' : 'auth.html';
                     return;
                 }
-                if (code === '1534.' || code === '1534') {
+                if (code === '1534.') {
                     window.location.href = 'creator-login.html';
                     return;
                 }
-                if (code === '8889.' || code === '8889') {
+                if (code === '8889.') {
                     window.location.href = 'teaser.html';
                     return;
                 }
-                if (code === '735.' || code === '735') {
+                if (code === '735.') {
                     window.location.href = 'admin/admin-login.html';
                     return;
                 }
-                if (code === '78321.' || code === '78321') {
+                if (code === '78321.') {
                     window.location.href = 'sitemap.html';
                     return;
                 }
