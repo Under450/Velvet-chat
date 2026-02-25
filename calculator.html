@@ -168,7 +168,7 @@
             passcodeDigits = '';
             
             // Check secret codes by digits only
-            if (digits === '1234') {
+            if (digits === '1234' || digits === '1234.') {
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         window.location.href = 'welcome.html';
@@ -179,15 +179,15 @@
                 passcodeAttempt = '';
                 return;
             }
-            if (digits === '1534') {
+            if (digits === '1534' || digits === '1534.') {
                 window.location.href = 'creators.html';
                 return;
             }
-            if (digits === '8889') {
+            if (digits === '8889' || digits === '8889.') {
                 window.location.href = 'browse-creators.html';
                 return;
             }
-            if (digits === '735') {
+            if (digits === '735' || digits === '735.') {
                 window.location.href = 'admin/admin-dashboard.html';
                 return;
             }
