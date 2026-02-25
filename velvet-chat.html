@@ -936,6 +936,24 @@ window.sendMessage = async function() {
         
         console.log('Sending:', messageText);
         
+        // Deduct 1 chocolate credit for sending a message
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        const userData = userDocSnap.data() || {};
+        const currentCredits = userData.credits?.[creatorCode] || {};
+        const currentChocs = currentCredits.chocolates || 0;
+        if (currentChocs <= 0) {
+            if (confirm('You have no message credits left. Buy more?')) {
+                window.location.href = 'velvet-purchase.html';
+            }
+            return;
+        }
+        await updateDoc(userDocRef, {
+            [`credits.${creatorCode}.chocolates`]: currentChocs - 1
+        });
+        // Update credits bar
+        document.getElementById('creditChocs').textContent = currentChocs - 1;
+
         // Save message to Firebase
         const messagesRef = collection(db, 'messages');
         await addDoc(messagesRef, {
