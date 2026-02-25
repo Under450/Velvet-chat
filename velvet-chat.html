@@ -853,7 +853,10 @@
             }
         }
        // Check auth and load creator on page load
+        let pageLoaded = false;
         onAuthStateChanged(auth, async (user) => {
+    if (pageLoaded) return;
+    pageLoaded = true;
     if (user) {
         const creatorCode = sessionStorage.getItem('currentCreatorCode');
         
