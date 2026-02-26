@@ -703,12 +703,14 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
         }
 
         // Logout
-        document.getElementById('logoutBtn').addEventListener('click', async function() {
+        window.logout = async function() {
             if (confirm('Logout?')) {
                 await signOut(auth);
                 window.location.href = 'auth.html';
             }
-        });
+        }
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.addEventListener('click', window.logout);
     </script>
 </body>
 </html>
