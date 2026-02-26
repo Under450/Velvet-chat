@@ -332,6 +332,7 @@ if (creatorsSnapshot.empty) {
 const creatorDoc = creatorsSnapshot.docs[0];
 currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             document.getElementById('creatorName').textContent = `${currentCreator.name} • Code: ${currentCreator.code}`;
+            window._creatorFirstName = currentCreator.name.split(' ')[0];
             loadMedia();
             loadPotdList();
                 loadAvailability(currentCreator.code);
@@ -702,7 +703,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
         <div style="background:linear-gradient(135deg,#880e4f,#2d0a1e);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:8px;">
                 <span style="font-size:18px;">💋</span>
-                <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;">VELVET</span>
+                <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;" id="callOverlayTitle">VELVET</span>
                 <span style="font-size:18px;">💗</span>
             </div>
             <button onclick="endCreatorCall()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;">✕ End Call</button>
@@ -722,6 +723,10 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
     <script>
         function openCreatorCall(url) {
             const overlay = document.getElementById('velvetCallOverlay');
+            const nameEl = document.getElementById('callOverlayTitle');
+            if (nameEl && window._creatorFirstName) {
+                nameEl.textContent = window._creatorFirstName.toUpperCase() + "'S VELVET VIDEO CHAT";
+            }
             const frame = document.getElementById('creatorCallFrame');
             const urlObj = new URL(url);
             urlObj.searchParams.set('minimal', '1');
