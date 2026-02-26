@@ -162,11 +162,16 @@
   </div>
 
   <!-- Whereby iframe (Velvet branded - no Whereby logo shown to users) -->
-  <iframe
-    id="wherebyFrame"
-    allow="camera; microphone; fullscreen; speaker; display-capture"
-    style="display:none;"
-  ></iframe>
+  <div style="position:relative;width:100%;height:100%;flex:1;display:flex;">
+    <iframe
+      id="wherebyFrame"
+      allow="camera; microphone; fullscreen; speaker; display-capture"
+      style="display:none;width:100%;height:100%;border:none;flex:1;"
+    ></iframe>
+    <!-- Watermark overlay - client ID burned in to deter screen recording -->
+    <div id="watermarkOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:hidden;">
+    </div>
+  </div>
 
   <!-- Call ended overlay -->
   <div class="end-overlay" id="endOverlay">
@@ -179,6 +184,35 @@
 
   <script>
     const roomUrl    = sessionStorage.getItem('callRoomUrl');
+    const callUserId = sessionStorage.getItem('callUserId') || '';
+    const watermarkId = callUserId ? callUserId.slice(0,8).toUpperCase() : '';
+
+    function buildWatermark() {
+        if (!watermarkId) return;
+        const overlay = document.getElementById('watermarkOverlay');
+        if (!overlay) return;
+        // Create multiple diagonal text spans across the screen
+        let html = '';
+        for (let row = -2; row < 12; row++) {
+            for (let col = -1; col < 5; col++) {
+                html += `<span style="
+                    position:absolute;
+                    left:${col * 28}%;
+                    top:${row * 10 + (col % 2) * 5}%;
+                    transform:rotate(-35deg);
+                    font-size:13px;
+                    font-weight:600;
+                    color:rgba(255,255,255,0.18);
+                    white-space:nowrap;
+                    letter-spacing:2px;
+                    font-family:monospace;
+                    text-shadow:0 0 4px rgba(0,0,0,0.5);
+                ">${watermarkId}</span>`;
+            }
+        }
+        overlay.innerHTML = html;
+        overlay.style.display = 'block';
+    }
     const creatorName = sessionStorage.getItem('callCreatorName') || 'Creator';
     const duration   = parseInt(sessionStorage.getItem('callDuration') || '15');
     const scheduledAt = sessionStorage.getItem('callScheduledAt');
@@ -208,11 +242,13 @@
     urlObj.searchParams.set('recording', 'off');
 
     frame.src = urlObj.toString();
+    buildWatermark();
 
     // Show frame after short delay (let it load)
     setTimeout(() => {
       document.getElementById('waitingScreen').classList.add('hidden');
       frame.style.display = 'block';
+      document.getElementById('watermarkOverlay').style.display = 'block';
       startTimer(duration * 60);
     }, 3000);
 

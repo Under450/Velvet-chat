@@ -283,6 +283,7 @@
         sessionStorage.setItem('callCreatorName', booking.creatorName);
         sessionStorage.setItem('callDuration', booking.duration);
         sessionStorage.setItem('callScheduledAt', booking.scheduledAt);
+        sessionStorage.setItem('callUserId', booking.userId || user.uid);
         window.location.href = 'video-call.html';
       }
     };
