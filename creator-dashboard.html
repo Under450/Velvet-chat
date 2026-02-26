@@ -683,7 +683,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
                         html += '<div style="font-size:12px;color:#e74c3c;margin-top:4px;">Starting in ' + minsUntil + ' mins</div>';
                     }
                     html += '</div>';
-                    html += '<a href="' + booking.hostRoomUrl + '" target="_blank" style="padding:10px 16px;background:' + (canJoin ? '#27ae60' : '#1e3a8a') + ';color:#fff;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;">' + (canJoin ? '🟢 Join Now' : '📹 Join') + '</a>';
+                    html += '<button onclick="openCreatorCall(\'' + booking.hostRoomUrl + '\')" style="padding:10px 16px;background:' + (canJoin ? '#27ae60' : 'linear-gradient(135deg,#c2185b,#880e4f)') + ';color:#fff;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;">' + (canJoin ? '🟢 Join Now' : '📹 Join') + '</button>';
                     html += '</div>';
                 });
 
@@ -696,7 +696,50 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
 
         // Logout handled in plain script below
     </script>
+    <!-- Velvet Video Call Overlay (creator only) -->
+    <div id="velvetCallOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#1a0a2e;flex-direction:column;">
+        <!-- Top bar -->
+        <div style="background:linear-gradient(135deg,#880e4f,#2d0a1e);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:18px;">💋</span>
+                <span style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:3px;">VELVET</span>
+                <span style="font-size:18px;">💗</span>
+            </div>
+            <button onclick="endCreatorCall()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;">✕ End Call</button>
+        </div>
+        <!-- Hearts border strip -->
+        <div id="heartsBorder" style="background:linear-gradient(135deg,#2d0a1e,#880e4f,#2d0a1e);padding:6px 0;text-align:center;font-size:16px;letter-spacing:4px;flex-shrink:0;overflow:hidden;white-space:nowrap;">
+            💗 💋 💕 💗 💋 💕 💗 💋 💕 💗 💋 💕 💗 💋 💕 💗 💋 💕 💗 💋 💕 💗 💋 💕
+        </div>
+        <!-- Whereby iframe -->
+        <iframe id="creatorCallFrame" src="" allow="camera;microphone;fullscreen;speaker;display-capture" style="flex:1;width:100%;border:none;"></iframe>
+        <!-- Hearts border strip bottom -->
+        <div style="background:linear-gradient(135deg,#2d0a1e,#880e4f,#2d0a1e);padding:6px 0;text-align:center;font-size:16px;letter-spacing:4px;flex-shrink:0;overflow:hidden;white-space:nowrap;">
+            💋 💗 💕 💋 💗 💕 💋 💗 💕 💋 💗 💕 💋 💗 💕 💋 💗 💕 💋 💗 💕 💋 💗 💕
+        </div>
+    </div>
+
     <script>
+        function openCreatorCall(url) {
+            const overlay = document.getElementById('velvetCallOverlay');
+            const frame = document.getElementById('creatorCallFrame');
+            const urlObj = new URL(url);
+            urlObj.searchParams.set('minimal', '1');
+            urlObj.searchParams.set('background', 'off');
+            urlObj.searchParams.set('chat', 'off');
+            urlObj.searchParams.set('people', 'off');
+            urlObj.searchParams.set('logo', 'off');
+            urlObj.searchParams.set('topToolbar', 'off');
+            urlObj.searchParams.set('bottomToolbar', 'on');
+            frame.src = urlObj.toString();
+            overlay.style.display = 'flex';
+        }
+
+        function endCreatorCall() {
+            document.getElementById('velvetCallOverlay').style.display = 'none';
+            document.getElementById('creatorCallFrame').src = '';
+        }
+
         async function logout() {
             if (confirm('Logout?')) {
                 const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
