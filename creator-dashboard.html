@@ -623,7 +623,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             btn.textContent = 'Saving...';
 
             try {
-                const creatorCode = sessionStorage.getItem('creatorCode');
+                const creatorCode = currentCreator.code;
                 // Convert Set of "dayIdx_hour_minute" to slot objects
                 const slots = Array.from(selectedSlots).map(key => {
                     const [dayOfWeek, hour, minute] = key.split('_').map(Number);
