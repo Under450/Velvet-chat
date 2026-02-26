@@ -575,7 +575,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
                 DAYS.forEach((day, dayIdx) => {
                     const key = dayIdx + '_' + hour + '_0';
                     const selected = selectedSlots.has(key);
-                    html += '<div onclick="toggleSlot(this,'' + key + '')" style="height:32px;border-radius:6px;cursor:pointer;background:' + (selected ? '#1e3a8a' : '#f0f0f0') + ';border:2px solid ' + (selected ? '#1e3a8a' : 'transparent') + ';" data-key="' + key + '"></div>';
+                    html += `<div onclick="toggleSlot(this,'${key}')" style="height:32px;border-radius:6px;cursor:pointer;background:${selected ? '#1e3a8a' : '#f0f0f0'};border:2px solid ${selected ? '#1e3a8a' : 'transparent'};" data-key="${key}"></div>`;
                 });
                 html += '</div>';
             });
