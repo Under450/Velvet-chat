@@ -241,7 +241,20 @@
                 <div class="progress-bar"><div class="progress-fill" id="potdProgressFill"></div></div>
             </div>
             <button class="upload-btn" id="potdBtn" onclick="uploadPotd()">Upload Picture of the Day</button>
-            <div id="potdList" style="margin-top:20px;"></div>
+            <div style="margin-top:16px;">
+                <label style="font-size:14px;color:#666;display:block;margin-bottom:6px;">Filter by day</label>
+                <select id="potdDayFilter" onchange="filterPotdByDay()" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;margin-bottom:12px;">
+                    <option value="">— Show all days —</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+            <div id="potdList" style="margin-top:4px;"></div>
         </div>
 
         <!-- Media Gallery -->
@@ -511,22 +524,43 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
         }
 
         // Load existing POTD entries
+        let allPotdEntries = [];
+
         async function loadPotdList() {
             const snap = await getDocs(query(collection(db, 'picture_of_day'), where('creatorCode', '==', currentCreator.code)));
             const container = document.getElementById('potdList');
             if (snap.empty) { container.innerHTML = '<p style="color:#999;font-size:14px;">No pictures uploaded yet.</p>'; return; }
-            const sorted = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b) => a.day > b.day ? -1 : 1);
-            container.innerHTML = sorted.map(p => `
-                <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
-                    <img src="${p.url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
-                    <div style="flex:1">
-                        <div style="font-weight:600;font-size:14px;">${p.title}</div>
-                        <div style="color:#888;font-size:12px;">${p.day}</div>
-                    </div>
-                    <button onclick="deletePotd('${p.id}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Delete</button>
-                </div>
-            `).join('');
+            allPotdEntries = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b) => a.day > b.day ? -1 : 1);
+            renderPotdList(allPotdEntries);
         }
+
+        function renderPotdList(entries) {
+            const container = document.getElementById('potdList');
+            if (entries.length === 0) { container.innerHTML = '<p style="color:#999;font-size:14px;">No pictures for this day.</p>'; return; }
+            container.innerHTML = entries.map(p => {
+                // Get day name from date string e.g. "2026-02-25"
+                const dayName = p.day ? new Date(p.day).toLocaleDateString('en-GB', {weekday:'long'}) : '';
+                return \`
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
+                    <img src="\${p.url}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:14px;">\${p.title}</div>
+                        <div style="color:#888;font-size:12px;">\${dayName} · \${p.day}</div>
+                    </div>
+                    <button onclick="deletePotd('\${p.id}')" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Delete</button>
+                </div>\`;
+            }).join('');
+        }
+
+        window.filterPotdByDay = function() {
+            const selected = document.getElementById('potdDayFilter').value;
+            if (!selected) { renderPotdList(allPotdEntries); return; }
+            const filtered = allPotdEntries.filter(p => {
+                const dayName = p.day ? new Date(p.day).toLocaleDateString('en-GB', {weekday:'long'}) : '';
+                return dayName === selected;
+            });
+            renderPotdList(filtered);
+        };
 
         window.deletePotd = async function(id) {
             if (!confirm('Delete this Picture of the Day?')) return;
