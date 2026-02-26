@@ -507,7 +507,7 @@
             <button class="credits-btn" onclick="window.location.href='velvet-purchase.html'">
                 <span>£££</span>
             </button>
-            <div class="icon-btn" id="videoCallBtn" onclick="window.location.href='book-call.html'" title="Book a video call" style="display:none;">📹</div>
+            <div id="videoCallBtn" style="display:none;"></div>
             <div class="icon-btn" onclick="toggleSettingsMenu()">⚙️</div>
             <div class="icon-btn" onclick="window.location.href='index.html'">👁️</div>
         </div>
@@ -548,8 +548,64 @@
             <div class="potd-lock-icon">🔒</div>
         </div>
         <div class="potd-info">
-            <div class="potd-title" id="potdBannerTitle">Picture of the Day</div>
+            <div class="potd-title" id="potdBannerTitle">Sexy picture of the day just for you</div>
             <div style="color:#aaa;font-size:12px;" id="potdBannerCost">1 🌹 to unlock</div>
+        </div>
+        <div id="bookCallBtnWrap" style="display:none; margin-top:8px; padding:0 12px 10px; position:relative; text-align:right;">
+            <style>
+                .book-call-animated {
+                    background: linear-gradient(135deg, #ff4d8d, #c2185b);
+                    padding: 9px 14px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #fff;
+                    cursor: pointer;
+                    border: none;
+                    white-space: nowrap;
+                    position: relative;
+                    overflow: hidden;
+                    animation: potdPulseGlow 2s infinite;
+                }
+                .book-call-animated::after {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: -100%;
+                    width: 60%;
+                    height: 100%;
+                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+                    animation: potdShimmer 2.5s infinite;
+                }
+                @keyframes potdShimmer {
+                    0%   { left: -100%; }
+                    100% { left: 200%; }
+                }
+                @keyframes potdPulseGlow {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,141,0.7); }
+                    50%       { box-shadow: 0 0 0 10px rgba(255,77,141,0); }
+                }
+                .book-call-star {
+                    position: absolute;
+                    top: -8px; right: -8px;
+                    width: 20px; height: 20px;
+                    animation: potdStarPulse 1.2s infinite cubic-bezier(0.36, 0.07, 0.19, 0.97);
+                    filter: drop-shadow(0 0 4px rgba(255,0,0,0.9));
+                    pointer-events: none;
+                }
+                @keyframes potdStarPulse {
+                    0%, 100% { transform: scale(1) rotate(0deg); }
+                    30%       { transform: scale(1.8) rotate(20deg); }
+                    60%       { transform: scale(0.85) rotate(-10deg); }
+                }
+            </style>
+            <div style="position:relative; display:inline-block;">
+                <button class="book-call-animated" onclick="window.location.href='book-call.html'">📹 Book a one on one video call</button>
+                <div class="book-call-star">
+                    <svg viewBox="0 0 24 24" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                    </svg>
+                </div>
+            </div>
         </div>
         <button class="potd-unlock-btn" id="potdUnlockBtn" onclick="unlockPotd()">Unlock Photo of the Day</button>
     </div>
@@ -640,7 +696,7 @@
                 // Update UI with creator info
                 document.getElementById('pageTitle').textContent = currentCreator.name;
                 document.getElementById('creatorName').textContent = currentCreator.name;
-                document.getElementById('videoCallBtn').style.display = 'flex';
+                document.getElementById('bookCallBtnWrap').style.display = 'block';
                 
                 // Set profile picture
                 const profilePic = document.getElementById('profilePic');
@@ -686,7 +742,7 @@
 
                 const banner = document.getElementById('potdBanner');
                 document.getElementById('potdBannerImg').src = potdData.url;
-                document.getElementById('potdBannerTitle').textContent = potdData.title || 'Picture of the Day';
+                document.getElementById('potdBannerTitle').textContent = potdData.title || 'Sexy picture of the day just for you';
                 document.getElementById('potdBannerCost').textContent = `${potdData.cost || 1} 🌹 roses to unlock`;
                 const creatorNameForBtn = currentCreator ? currentCreator.name : '';
                 document.getElementById('potdUnlockBtn').textContent = `Unlock ${creatorNameForBtn}'s Photo of the Day`;
