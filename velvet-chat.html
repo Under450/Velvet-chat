@@ -460,33 +460,55 @@
             transform: scale(1.1);
             transition: filter 0.5s ease;
         }
-        .potd-lock-icon {
+        .potd-unlock-overlay {
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%,-50%);
-            font-size: 20px;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .potd-unlock-text {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ff6b9d;
+            text-shadow: 0 0 10px rgba(255,77,141,0.9), 0 0 20px rgba(255,77,141,0.6);
+            animation: pinkPulse 1.5s infinite;
+            user-select: none;
+        }
+        @keyframes pinkPulse {
+            0%, 100% { opacity:1; text-shadow: 0 0 8px rgba(255,77,141,0.9), 0 0 20px rgba(255,77,141,0.5); transform: scale(1); }
+            50%       { opacity:0.7; text-shadow: 0 0 16px rgba(255,77,141,1), 0 0 35px rgba(255,77,141,0.8); transform: scale(1.15); }
+        }
+        .potd-view-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .potd-view-text {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            line-height: 1.4;
         }
         .potd-info { flex: 1; }
         .potd-title { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
         .potd-banner.unlocked .potd-blur-wrap img {
             filter: none;
             transform: scale(1);
-            cursor: pointer;
         }
         .potd-banner.unlocked .potd-blur-wrap { cursor: pointer; }
-        .potd-banner.unlocked .potd-lock-icon { display: none; }
-        .potd-unlock-btn {
-            background: linear-gradient(135deg, #8b5cf6, #ec4899);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .potd-unlock-btn:disabled { opacity: 0.6; }
+        .potd-banner.unlocked .potd-unlock-overlay { display: none; }
+        .potd-banner.unlocked .potd-view-overlay { display: flex; }
     </style>
 </head>
 <body style="display: none;">
@@ -543,9 +565,14 @@
 
     <!-- Picture of the Day Banner -->
     <div class="potd-banner hidden" id="potdBanner">
-        <div class="potd-blur-wrap">
+        <div class="potd-blur-wrap" id="potdBlurWrap">
             <img id="potdBannerImg" src="" alt="Picture of the Day">
-            <div class="potd-lock-icon">🔒</div>
+            <div class="potd-unlock-overlay" onclick="unlockPotd()">
+                <span class="potd-unlock-text">UNLOCK</span>
+            </div>
+            <div class="potd-view-overlay" onclick="openImageModal(document.getElementById('potdBannerImg').src)">
+                <span class="potd-view-text">VIEW<br>FULL</span>
+            </div>
         </div>
         <div class="potd-info">
             <div class="potd-title" id="potdBannerTitle">Sexy picture of the day just for you</div>
@@ -607,7 +634,6 @@
                 </div>
             </div>
         </div>
-        <button class="potd-unlock-btn" id="potdUnlockBtn" onclick="unlockPotd()">Unlock Photo of the Day</button>
     </div>
 
     <!-- Chat messages -->
@@ -745,7 +771,7 @@
                 document.getElementById('potdBannerTitle').textContent = potdData.title || 'Sexy picture of the day just for you';
                 document.getElementById('potdBannerCost').textContent = `${potdData.cost || 1} 🌹 roses to unlock`;
                 const creatorNameForBtn = currentCreator ? currentCreator.name : '';
-                document.getElementById('potdUnlockBtn').textContent = `Unlock ${creatorNameForBtn}'s Photo of the Day`;
+                // unlock triggered via photo tap
                 banner.classList.remove('hidden');
 
                 // Check if already unlocked
@@ -758,11 +784,7 @@
 
                 if (!unlockedSnap.empty) {
                     banner.classList.add('unlocked');
-                    const btn = document.getElementById('potdUnlockBtn');
-                    btn.textContent = 'View Full Image';
-                    btn.disabled = false;
-                    btn.onclick = function() { openImageModal(potdData.url); };
-                    document.getElementById('potdBannerImg').onclick = function() { openImageModal(potdData.url); };
+                    document.getElementById('potdBanner').classList.add('unlocked');
                 }
 
                 // Store potdData for unlock function
@@ -810,11 +832,7 @@
                 // Show unlocked
                 const banner = document.getElementById('potdBanner');
                 banner.classList.add('unlocked');
-                const btn = document.getElementById('potdUnlockBtn');
-                btn.textContent = 'View Full Image';
-                btn.disabled = false;
-                btn.onclick = function() { openImageModal(potdData.url); };
-                document.getElementById('potdBannerImg').onclick = function() { openImageModal(potdData.url); };
+                document.getElementById('potdBanner').classList.add('unlocked');
 
             } catch(e) {
                 alert('Error unlocking: ' + e.message);
