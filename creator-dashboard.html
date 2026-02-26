@@ -736,6 +736,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             urlObj.searchParams.set('logo', 'off');
             urlObj.searchParams.set('topToolbar', 'off');
             urlObj.searchParams.set('bottomToolbar', 'on');
+            urlObj.searchParams.set('recording', 'off');
             frame.src = urlObj.toString();
             overlay.style.display = 'flex';
         }
