@@ -740,7 +740,7 @@
                 const user = auth.currentUser;
                 if (!creatorCode || !user) return;
 
-                const today = new Date().getDay(); // 0=Sun, 6=Sat
+                const today = new Date().toISOString().split('T')[0]; // e.g. '2026-02-26'
 
                 // Get creator's potd for today
                 const potdSnap = await getDocs(query(
