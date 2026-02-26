@@ -14,19 +14,42 @@ const db = admin.firestore();
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  try {
-    const { creatorCode, userId, type } = req.query;
+  const { creatorCode, userId, type, mode, id } = req.query;
 
-    if (!creatorCode) {
-      return res.status(400).json({ error: 'Creator code required' });
+  if (!creatorCode) return res.status(400).json({ error: 'Creator code required' });
+
+  try {
+
+    // MODE: potd - list or delete picture_of_day entries
+    if (mode === 'potd') {
+      if (req.method === 'DELETE') {
+        if (!id) return res.status(400).json({ error: 'id required' });
+        await db.collection('picture_of_day').doc(id).delete();
+        return res.status(200).json({ success: true });
+      }
+      const snap = await db.collection('picture_of_day').where('creatorCode', '==', creatorCode).get();
+      const entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      return res.status(200).json({ success: true, entries });
     }
 
-    // Get all media for this creator
+    // MODE: list - all media for creator dashboard
+    if (mode === 'list') {
+      if (req.method === 'DELETE') {
+        if (!id) return res.status(400).json({ error: 'id required' });
+        await db.collection('media').doc(id).delete();
+        return res.status(200).json({ success: true });
+      }
+      const snap = await db.collection('media').where('creatorCode', '==', creatorCode).get();
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      return res.status(200).json({ success: true, items });
+    }
+
+    // DEFAULT: return random locked media for client chat
     let query = db.collection('media').where('creatorCode', '==', creatorCode);
     if (type) query = query.where('type', '==', type);
 
@@ -36,7 +59,6 @@ module.exports = async (req, res) => {
       return res.status(200).json({ available: false, message: 'No content available yet' });
     }
 
-    // Get already unlocked media for this user
     let unlockedIds = [];
     if (userId) {
       const unlockedSnapshot = await db.collection('unlocked_media')
@@ -46,17 +68,14 @@ module.exports = async (req, res) => {
       unlockedIds = unlockedSnapshot.docs.map(doc => doc.data().mediaId);
     }
 
-    // Find media not yet unlocked by this user
     const allMedia = mediaSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const lockedMedia = allMedia.filter(m => !unlockedIds.includes(m.id));
 
     if (lockedMedia.length === 0) {
-      // All media already unlocked - return a random one they already have
       const random = allMedia[Math.floor(Math.random() * allMedia.length)];
       return res.status(200).json({ available: true, media: random, alreadyUnlocked: true });
     }
 
-    // Return a random locked media item
     const random = lockedMedia[Math.floor(Math.random() * lockedMedia.length)];
     return res.status(200).json({ available: true, media: random, alreadyUnlocked: false });
 
