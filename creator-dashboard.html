@@ -196,6 +196,39 @@
     </div>
     
     <div class="container">
+        <!-- Picture of the Day -->
+        <div class="upload-section">
+            <h2>📅 Picture of the Day</h2>
+            <p style="color:#666;font-size:13px;margin-bottom:16px;">One photo per day. Clients pay 1 rose to unlock it.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                <select id="potdDate" style="flex:1;min-width:130px;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
+                    <option value="">-- Select day --</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+                <input type="text" id="potdTitle" placeholder="Title (optional)" style="flex:1;min-width:130px;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
+                <input type="file" id="potdFile" accept="image/*" style="flex:1;min-width:130px;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;">
+            </div>
+            <div class="progress" id="potdProgress">
+                <div class="progress-bar"><div class="progress-fill" id="potdProgressFill"></div></div>
+            </div>
+            <button class="upload-btn" id="potdBtn" onclick="uploadPotd()" style="width:100%;margin-bottom:16px;">Upload Picture of the Day</button>
+            <div id="potdList"></div>
+        </div>
+
+        <!-- Media Gallery -->
+        <div class="upload-section">
+            <h2>Your Content</h2>
+            <div id="mediaContainer" class="media-grid">
+                <div class="loading">Loading your content...</div>
+            </div>
+        </div>
+
         <!-- Upload Section -->
         <div class="upload-section">
             <h2>Upload New Content</h2>
@@ -222,37 +255,6 @@
                 </div>
             </div>
             <button class="upload-btn" id="uploadBtn" onclick="uploadContent()">Upload Content</button>
-        </div>
-        
-        <!-- Picture of the Day -->
-        <div class="upload-section">
-            <h2>📅 Picture of the Day</h2>
-            <p style="color:#666;font-size:14px;margin-bottom:20px;">Upload a photo for a specific day. Clients pay 1 rose to unlock it at the top of the chat.</p>
-            <div class="form-group">
-                <label>Select Day</label>
-                <input type="date" id="potdDate" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
-            </div>
-            <div class="form-group">
-                <label>Title (optional)</label>
-                <input type="text" id="potdTitle" placeholder="e.g. Good morning 💗" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;">
-            </div>
-            <div class="form-group">
-                <label>Photo</label>
-                <input type="file" id="potdFile" accept="image/*">
-            </div>
-            <div class="progress" id="potdProgress">
-                <div class="progress-bar"><div class="progress-fill" id="potdProgressFill"></div></div>
-            </div>
-            <button class="upload-btn" id="potdBtn" onclick="uploadPotd()">Upload Picture of the Day</button>
-            <div id="potdList" style="margin-top:16px;"></div>
-        </div>
-
-        <!-- Media Gallery -->
-        <div class="upload-section">
-            <h2>Your Content</h2>
-            <div id="mediaContainer" class="media-grid">
-                <div class="loading">Loading your content...</div>
-            </div>
         </div>
 
         <!-- Availability Section -->
@@ -333,7 +335,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
                 loadAvailability(currentCreator.code);
                 loadBookings(currentCreator.code);
             // Set today as default date
-            document.getElementById('potdDate').value = new Date().toISOString().split('T')[0];
+            // potdDate is now a day dropdown
         });
         
         // Upload content
@@ -467,7 +469,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
             const title = document.getElementById('potdTitle').value || 'Picture of the Day';
 
             if (!file) { alert('Please select a photo'); return; }
-            if (!date) { alert('Please select a day'); return; }
+            if (!date || date === '') { alert('Please select a day'); return; }
 
             const btn = document.getElementById('potdBtn');
             const progress = document.getElementById('potdProgress');
@@ -518,36 +520,27 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
                 const data = await res.json();
                 if (data.success && data.entries) {
                     data.entries.forEach(p => {
-                        const dayName = p.day ? new Date(p.day).toLocaleDateString('en-GB', {weekday:'long'}) : '';
+                        const dayName = p.day || '';
                         if (byDay[dayName] !== undefined) byDay[dayName].push(p);
                     });
                 }
             } catch(e) { console.error('POTD load error:', e); }
 
-            container.innerHTML = DAY_NAMES.map(day => {
-                const entries = byDay[day];
-                const photosHtml = entries.length === 0
-                    ? '<p style="color:#bbb;font-size:13px;margin:8px 0 0 0;">No photo uploaded for this day</p>'
-                    : entries.map(p => `
-                        <div style="display:flex;align-items:center;gap:12px;padding:10px;background:#f9f9f9;border-radius:8px;margin-top:8px;">
-                            <img src="${p.url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;flex-shrink:0;">
-                            <div style="flex:1;">
-                                <div style="font-weight:600;font-size:14px;color:#333;">${p.title}</div>
-                                <div style="color:#888;font-size:12px;margin-top:2px;">${p.day}</div>
-                                <button onclick="deletePotd('${p.id}')" style="margin-top:8px;background:#e74c3c;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🗑 Delete</button>
-                            </div>
-                        </div>`).join('');
-
-                return `
-                <div style="margin-bottom:16px;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;">
-                    <div style="background:#f0f0f0;padding:10px 14px;font-weight:700;font-size:14px;color:#333;border-bottom:1px solid #e0e0e0;">
-                        ${day}
-                    </div>
-                    <div style="padding:10px 14px 14px;">
-                        ${photosHtml}
-                    </div>
-                </div>`;
-            }).join('');
+            container.innerHTML = '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;">' +
+                DAY_NAMES.map(day => {
+                    const entries = byDay[day];
+                    const p = entries[0];
+                    return `<div style="flex:0 0 80px;text-align:center;">
+                        <div style="font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">${day.slice(0,3)}</div>
+                        ${p
+                            ? `<div style="position:relative;">
+                                <img src="${p.url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #6B46C1;">
+                                <button onclick="deletePotd('${p.id}')" style="position:absolute;top:-6px;right:-6px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:20px;">×</button>
+                               </div>`
+                            : `<div style="width:80px;height:80px;border-radius:8px;border:2px dashed #ddd;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:24px;">+</div>`
+                        }
+                    </div>`;
+                }).join('') + '</div>';
         }
 
         window.deletePotd = async function(id) {
