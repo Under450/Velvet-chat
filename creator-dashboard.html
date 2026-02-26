@@ -409,38 +409,31 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
         
         // Load media
         async function loadMedia() {
+            const container = document.getElementById('mediaContainer');
             try {
-                const q = query(collection(db, 'media'), where('creatorCode', '==', currentCreator.code));
-                const snapshot = await getDocs(q);
-                
-                const container = document.getElementById('mediaContainer');
-                
-                if (snapshot.empty) {
+                const res = await fetch('https://velvet-chat-jjxw.vercel.app/api/creator-media?creatorCode=' + currentCreator.code);
+                const data = await res.json();
+                if (!data.success || !data.items || data.items.length === 0) {
                     container.innerHTML = '<div class="loading">No content uploaded yet</div>';
                     return;
                 }
-                
-                container.innerHTML = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    const isVideo = data.fileType === 'video';
-                    
+                container.innerHTML = data.items.map(item => {
+                    const isVideo = item.fileType === 'video';
                     return `
                         <div class="media-card">
-                            ${isVideo ? 
-                                `<video class="media-preview" controls><source src="${data.url}"></video>` :
-                                `<img class="media-preview" src="${data.url}" alt="${data.type}">`
+                            ${isVideo ?
+                                `<video class="media-preview" controls><source src="${item.url}"></video>` :
+                                `<img class="media-preview" src="${item.url}" alt="${item.type}">`
                             }
                             <div class="media-info">
-                                <div class="media-tag">${data.type}</div>
-                                <button class="delete-btn" onclick="deleteMedia('${doc.id}', '${data.fileName}')">Delete</button>
+                                <div class="media-tag">${item.type}</div>
+                                <button class="delete-btn" onclick="deleteMedia('${item.id}', '${item.fileName}')">Delete</button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 }).join('');
-                
             } catch (error) {
                 console.error('Load error:', error);
-                document.getElementById('mediaContainer').innerHTML = '<div class="loading">Error loading content</div>';
+                container.innerHTML = '<div class="loading">Error loading content</div>';
             }
         }
         
@@ -514,18 +507,19 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
         const DAY_NAMES = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
         async function loadPotdList() {
-            const snap = await getDocs(query(collection(db, 'picture_of_day'), where('creatorCode', '==', currentCreator.code)));
             const container = document.getElementById('potdList');
-            
-            // Group entries by day name
             const byDay = {};
             DAY_NAMES.forEach(d => byDay[d] = []);
-            
-            snap.docs.forEach(doc => {
-                const data = { id: doc.id, ...doc.data() };
-                const dayName = data.day ? new Date(data.day).toLocaleDateString('en-GB', {weekday:'long'}) : '';
-                if (byDay[dayName] !== undefined) byDay[dayName].push(data);
-            });
+            try {
+                const res = await fetch('https://velvet-chat-jjxw.vercel.app/api/potd?creatorCode=' + currentCreator.code);
+                const data = await res.json();
+                if (data.success && data.entries) {
+                    data.entries.forEach(p => {
+                        const dayName = p.day ? new Date(p.day).toLocaleDateString('en-GB', {weekday:'long'}) : '';
+                        if (byDay[dayName] !== undefined) byDay[dayName].push(p);
+                    });
+                }
+            } catch(e) { console.error('POTD load error:', e); }
 
             container.innerHTML = DAY_NAMES.map(day => {
                 const entries = byDay[day];
@@ -555,7 +549,7 @@ currentCreator = { id: creatorDoc.id, ...creatorDoc.data() };
 
         window.deletePotd = async function(id) {
             if (!confirm('Delete this Picture of the Day?')) return;
-            await deleteDoc(doc(db, 'picture_of_day', id));
+            await fetch('https://velvet-chat-jjxw.vercel.app/api/potd?creatorCode=' + currentCreator.code + '&id=' + id, { method: 'DELETE' });
             loadPotdList();
         }
 
