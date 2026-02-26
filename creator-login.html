@@ -177,7 +177,18 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Floaters rendered in HTML for instant load
+        // Spawn floating emojis
+        const emojis = ['💗', '💋', '💗', '💋', '💗', '💗', '💋', '💕', '💗', '💋'];
+        for (let i = 0; i < 40; i++) {
+            const el = document.createElement('div');
+            el.className = 'floater';
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.fontSize = (14 + Math.random() * 18) + 'px';
+            el.style.animationDuration = (6 + Math.random() * 10) + 's';
+            el.style.animationDelay = '0s';
+            document.body.appendChild(el);
+        }
 
         window.login = async function() {
             const email = document.getElementById('emailInput').value.trim();
@@ -206,45 +217,5 @@
             }
         };
     </script>
-    <div class="floater" style="left:2.5vw;font-size:19.0px;animation-duration:8.2s;animation-delay:-7.4s;">💋</div>
-    <div class="floater" style="left:8.7vw;font-size:21.6px;animation-duration:6.3s;animation-delay:-2.2s;">💗</div>
-    <div class="floater" style="left:60.2vw;font-size:24.1px;animation-duration:13.2s;animation-delay:-7.0s;">💗</div>
-    <div class="floater" style="left:22.0vw;font-size:24.6px;animation-duration:14.1s;animation-delay:-0.1s;">💋</div>
-    <div class="floater" style="left:69.8vw;font-size:20.1px;animation-duration:7.6s;animation-delay:-9.6s;">💗</div>
-    <div class="floater" style="left:10.2vw;font-size:20.8px;animation-duration:9.6s;animation-delay:-3.4s;">💗</div>
-    <div class="floater" style="left:80.7vw;font-size:27.1px;animation-duration:11.4s;animation-delay:-9.7s;">💗</div>
-    <div class="floater" style="left:7.9vw;font-size:19.3px;animation-duration:12.3s;animation-delay:-8.9s;">💋</div>
-    <div class="floater" style="left:57.7vw;font-size:26.7px;animation-duration:6.5s;animation-delay:-2.3s;">💗</div>
-    <div class="floater" style="left:98.5vw;font-size:29.4px;animation-duration:14.7s;animation-delay:-3.8s;">💗</div>
-    <div class="floater" style="left:63.6vw;font-size:20.6px;animation-duration:9.7s;animation-delay:-2.1s;">💕</div>
-    <div class="floater" style="left:70.2vw;font-size:26.3px;animation-duration:6.7s;animation-delay:-6.3s;">💗</div>
-    <div class="floater" style="left:72.9vw;font-size:16.9px;animation-duration:9.8s;animation-delay:-9.9s;">💗</div>
-    <div class="floater" style="left:22.0vw;font-size:19.8px;animation-duration:13.7s;animation-delay:-0.6s;">💗</div>
-    <div class="floater" style="left:80.5vw;font-size:21.2px;animation-duration:6.7s;animation-delay:-9.1s;">💗</div>
-    <div class="floater" style="left:87.6vw;font-size:19.7px;animation-duration:12.6s;animation-delay:-4.0s;">💋</div>
-    <div class="floater" style="left:14.3vw;font-size:16.5px;animation-duration:13.4s;animation-delay:-5.4s;">💕</div>
-    <div class="floater" style="left:42.8vw;font-size:24.5px;animation-duration:9.6s;animation-delay:-10.0s;">💋</div>
-    <div class="floater" style="left:51.0vw;font-size:15.6px;animation-duration:6.5s;animation-delay:-1.1s;">💗</div>
-    <div class="floater" style="left:79.2vw;font-size:21.6px;animation-duration:6.6s;animation-delay:-3.8s;">💗</div>
-    <div class="floater" style="left:52.9vw;font-size:31.5px;animation-duration:14.6s;animation-delay:-0.1s;">💕</div>
-    <div class="floater" style="left:68.2vw;font-size:23.7px;animation-duration:8.7s;animation-delay:-6.4s;">💋</div>
-    <div class="floater" style="left:29.4vw;font-size:16.8px;animation-duration:6.0s;animation-delay:-7.2s;">💋</div>
-    <div class="floater" style="left:97.2vw;font-size:27.7px;animation-duration:11.1s;animation-delay:-1.1s;">💗</div>
-    <div class="floater" style="left:84.2vw;font-size:23.1px;animation-duration:8.0s;animation-delay:-3.7s;">💗</div>
-    <div class="floater" style="left:53.9vw;font-size:28.0px;animation-duration:11.3s;animation-delay:-0.0s;">💗</div>
-    <div class="floater" style="left:48.9vw;font-size:16.0px;animation-duration:9.6s;animation-delay:-9.9s;">💗</div>
-    <div class="floater" style="left:23.9vw;font-size:18.3px;animation-duration:11.7s;animation-delay:-0.8s;">💗</div>
-    <div class="floater" style="left:81.6vw;font-size:31.6px;animation-duration:11.3s;animation-delay:-1.3s;">💕</div>
-    <div class="floater" style="left:94.7vw;font-size:17.0px;animation-duration:11.3s;animation-delay:-6.1s;">💕</div>
-    <div class="floater" style="left:92.9vw;font-size:27.6px;animation-duration:12.9s;animation-delay:-7.1s;">💋</div>
-    <div class="floater" style="left:99.5vw;font-size:25.7px;animation-duration:10.4s;animation-delay:-5.2s;">💋</div>
-    <div class="floater" style="left:24.8vw;font-size:15.2px;animation-duration:6.2s;animation-delay:-5.5s;">💋</div>
-    <div class="floater" style="left:22.0vw;font-size:15.3px;animation-duration:12.3s;animation-delay:-2.3s;">💋</div>
-    <div class="floater" style="left:86.0vw;font-size:15.3px;animation-duration:8.4s;animation-delay:-6.7s;">💗</div>
-    <div class="floater" style="left:53.9vw;font-size:27.0px;animation-duration:14.8s;animation-delay:-5.8s;">💋</div>
-    <div class="floater" style="left:78.5vw;font-size:28.5px;animation-duration:7.9s;animation-delay:-1.0s;">💋</div>
-    <div class="floater" style="left:35.4vw;font-size:21.4px;animation-duration:14.6s;animation-delay:-0.5s;">💋</div>
-    <div class="floater" style="left:6.1vw;font-size:27.1px;animation-duration:14.0s;animation-delay:-1.1s;">💋</div>
-    <div class="floater" style="left:19.0vw;font-size:22.1px;animation-duration:10.2s;animation-delay:-2.8s;">💋</div>
 </body>
 </html>
