@@ -152,7 +152,7 @@
             <input type="password" id="passwordInput" placeholder="••••••••" onkeypress="if(event.key==='Enter') login()" />
         </div>
 
-        <button class="login-btn" id="loginBtn">Sign In</button>
+        <button class="login-btn" onclick="login()">Sign In</button>
         <div class="error-msg" id="errorMsg"></div>
 
         <hr class="divider">
@@ -190,7 +190,7 @@
             document.body.appendChild(el);
         }
 
-        document.getElementById("loginBtn").addEventListener("click", async function() {
+        window.login = async function() {
             const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value;
             const errorMsg = document.getElementById('errorMsg');
@@ -215,7 +215,7 @@
             } catch (err) {
                 errorMsg.textContent = 'Invalid email or password';
             }
-        });
+        };
     </script>
 </body>
 </html>
