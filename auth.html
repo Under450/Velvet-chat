@@ -648,6 +648,7 @@
                     }
                     
                     sessionStorage.setItem('currentCreatorCode', code);
+                    try { const cR=await fetch('https://velvet-chat-jjxw.vercel.app/api/creators'); const cD=await cR.json(); const cr=cD.creators.find(c=>c.code===code); if(cr) sessionStorage.setItem('currentCreatorName',cr.name); } catch(e){}
                     window.location.href = 'velvet-chat.html';
                 } else {
                     window.location.href = 'welcome.html';

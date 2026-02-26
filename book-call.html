@@ -284,8 +284,8 @@
     const API = 'https://velvet-chat-jjxw.vercel.app';
 
     let currentUser = null;
-    let creatorCode = sessionStorage.getItem('creatorCode');
-    let creatorName = sessionStorage.getItem('creatorName') || 'Creator';
+    let creatorCode = sessionStorage.getItem('currentCreatorCode') || sessionStorage.getItem('creatorCode');
+    let creatorName = sessionStorage.getItem('currentCreatorName') || sessionStorage.getItem('creatorName') || 'Creator';
     let selectedDuration = 15;
     let selectedPricePence = 2500;
     let selectedSlot = null;
